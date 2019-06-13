@@ -14,7 +14,11 @@ Function Connect-XRPL {
         while (!$command.IsCompleted) {
             Start-Sleep -Milliseconds 100
         }
-        Write-Host "Connected!" -ForegroundColor Green
+        if($webSocket.State -eq 'Open') {
+            Write-Host "Connected!" -ForegroundColor Green
+        } else {
+            Write-Host "Failed to open Websocket!" -ForegroundColor Red
+        }
     } catch {
         Write-Host "Error!" -ForegroundColor Red
         Write-Host $_.Exception.Message
@@ -28,8 +32,12 @@ Function Disconnect-XRPL {
         while (!$command.IsCompleted) {
             Start-Sleep -Milliseconds 100
         }
-        Write-Host "Disconnected!" -ForegroundColor Yellow
-        $webSocket.dispose()
+        if($webSocket.State -ne 'Open') {
+            Write-Host "Disconnected!" -ForegroundColor Yellow
+            $webSocket.dispose()
+        } else {
+            Write-Host "Error! Failed to disconnect websocket." -ForegroundColor Red
+        }        
     } catch {
         Write-Host "Error!" -ForegroundColor Red
         Write-Host $_.Exception.Message
@@ -89,7 +97,7 @@ Function Get-ServerInfo {
 Function ConvertTo-ReadableJSON {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
         [string]$inString
     )
     return $inString | ConvertFrom-Json | ConvertTo-Json -Depth 10
