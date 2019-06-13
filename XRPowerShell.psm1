@@ -48,15 +48,17 @@ Function Get-ServerInfo {
 
     $txJSON = 
 '{
-    "id": 1,
     "command": "server_info"
 }'
 
-    $encoding = [System.Text.Encoding]::UTF8
-    $array = @();
-    $array = $encoding.GetBytes($txJSON)
+    #$encoding = [System.Text.Encoding]::UTF8
+    #$array = @();
+    #$array = $encoding.GetBytes($txJSON)
 
-    $message = New-Object System.ArraySegment[byte] -ArgumentList @(,$array)
+    #$message = New-Object System.ArraySegment[byte] -ArgumentList @(,$array)
+    $message = Format-txJSON $txJSON
+    Send-Message $message
+    <#
     $command = $webSocket.SendAsync($message, [System.Net.WebSockets.WebSocketMessageType]::Text, [System.Boolean]::TrueString, $cancellationToken)
     
     $start = Get-Date
@@ -70,7 +72,7 @@ Function Get-ServerInfo {
         Start-Sleep -Milliseconds 100
     }
     Write-Host "Message sent to server" -ForegroundColor Cyan
-
+    #>
     $size = 1024
     $array = [byte[]] @(,0) * $size
     $receiveArr = New-Object System.ArraySegment[byte] -ArgumentList @(,$array)
@@ -89,6 +91,60 @@ Function Get-ServerInfo {
         Write-Host "Message received from server" -ForegroundColor Green
         return $inputObj = $receiveMsg
     }
+}
+
+Function Get-AccountInfo {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$address
+    )
+
+    $txJSON = 
+'{
+    "command": "account_info",
+    "account": "ADDRESS"
+}'
+    $txJSON = $txJSON.replace("ADDRESS",$address)
+    $message = Format-txJSON $txJSON
+}
+
+Function Format-txJSON {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
+        [string]$txJSON
+    )
+    $encoding = [System.Text.Encoding]::UTF8
+    $array = @();
+    $array = $encoding.GetBytes($txJSON)
+
+    return New-Object System.ArraySegment[byte] -ArgumentList @(,$array)
+}
+
+Function Send-Message {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        $message
+    )
+    $command = $webSocket.SendAsync($message, [System.Net.WebSockets.WebSocketMessageType]::Text, [System.Boolean]::TrueString, $cancellationToken)
+    
+    $start = Get-Date
+    $timeout = 30
+    while (!$command.IsCompleted) {
+        $elapsed = ((Get-Date) - $start).Seconds
+        if($elapsed -gt $timeout) {
+            Write-Host "Warning! Message took longer than $timeout and may not have been sent."
+            return
+        }
+        Start-Sleep -Milliseconds 100
+    }
+    Write-Host "Message sent to server" -ForegroundColor Cyan
+}
+
+Function Receive-Message {
+    
 }
 
 Function ConvertTo-ReadableJSON {
