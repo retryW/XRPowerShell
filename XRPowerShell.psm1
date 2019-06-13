@@ -107,6 +107,8 @@ Function Get-AccountInfo {
 }'
     $txJSON = $txJSON.replace("ADDRESS",$address)
     $message = Format-txJSON $txJSON
+    Send-Message $message
+    Receive-Message
 }
 
 Function Format-txJSON {
@@ -144,7 +146,24 @@ Function Send-Message {
 }
 
 Function Receive-Message {
-    
+    $size = 1024
+    $array = [byte[]] @(,0) * $size
+    $receiveArr = New-Object System.ArraySegment[byte] -ArgumentList @(,$array)
+
+    $receiveMsg = ""
+    if($webSocket.State -eq 'Open') {
+        Do {
+            $command = $webSocket.ReceiveAsync($receiveArr, $cancellationToken)
+            while (!$command.IsCompleted) {
+                Start-Sleep -Milliseconds 100
+            }
+            $receiveArr.Array[0..($command.Result.Count - 1)] | foreach {$receiveMsg += [char]$_}
+        } until ($command.Result.Count -lt $size)
+    }
+    if ($receiveMsg) {
+        Write-Host "Message received from server" -ForegroundColor Green
+        return $receiveMsg
+    }
 }
 
 Function ConvertTo-ReadableJSON {
