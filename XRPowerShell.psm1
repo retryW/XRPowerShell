@@ -37,11 +37,6 @@ Function Disconnect-XRPL {
 }
 
 Function Get-ServerInfo {
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory=$false)]
-        [switch]$ToConsole
-    )
 
     $txJSON = 
 '{
@@ -49,7 +44,6 @@ Function Get-ServerInfo {
     "command": "server_info"
 }'
 
-    #$txJSON = (New-Object -TypeName PSObject -Prop $tx) | ConvertTo-Json
     $encoding = [System.Text.Encoding]::UTF8
     $array = @();
     $array = $encoding.GetBytes($txJSON)
