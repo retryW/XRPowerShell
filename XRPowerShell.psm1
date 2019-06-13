@@ -69,7 +69,7 @@ Function Get-ServerInfo {
         }
         Start-Sleep -Milliseconds 100
     }
-    Write-Host "Message sent to server"
+    Write-Host "Message sent to server" -ForegroundColor Cyan
 
     $size = 1024
     $array = [byte[]] @(,0) * $size
@@ -86,11 +86,8 @@ Function Get-ServerInfo {
         } until ($command.Result.Count -lt $size)
     }
     if ($receiveMsg) {
-        if(!$ToConsole) {
-            return $inputObj = $receiveMsg
-        } else {
-            Write-Host (ConvertTo-ReadableJSON $receiveMsg)
-        }
+        Write-Host "Message received from server" -ForegroundColor Green
+        return $inputObj = $receiveMsg
     }
 }
 
