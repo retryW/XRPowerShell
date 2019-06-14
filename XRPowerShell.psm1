@@ -6,6 +6,12 @@ Function Connect-XRPL {
         [Parameter(Mandatory=$true)]
         [String]$wssUri
     )
+
+    if($webSocket) {
+        Write-Host "Error! Already connected to a websocket." -ForegroundColor Red
+        return
+    }
+
     $Global:webSocket = New-Object System.Net.WebSockets.ClientWebSocket
     $Global:cancellationToken = New-Object System.Threading.CancellationToken
 
@@ -58,6 +64,7 @@ Function Get-ServerInfo {
     #$message = New-Object System.ArraySegment[byte] -ArgumentList @(,$array)
     $message = Format-txJSON $txJSON
     Send-Message $message
+    Receive-Message
     <#
     $command = $webSocket.SendAsync($message, [System.Net.WebSockets.WebSocketMessageType]::Text, [System.Boolean]::TrueString, $cancellationToken)
     
@@ -73,6 +80,7 @@ Function Get-ServerInfo {
     }
     Write-Host "Message sent to server" -ForegroundColor Cyan
     #>
+    <#
     $size = 1024
     $array = [byte[]] @(,0) * $size
     $receiveArr = New-Object System.ArraySegment[byte] -ArgumentList @(,$array)
@@ -91,6 +99,7 @@ Function Get-ServerInfo {
         Write-Host "Message received from server" -ForegroundColor Green
         return $inputObj = $receiveMsg
     }
+    #>
 }
 
 Function Get-AccountInfo {
@@ -103,9 +112,9 @@ Function Get-AccountInfo {
     $txJSON = 
 '{
     "command": "account_info",
-    "account": "ADDRESS"
+    "account": "_ADDRESS_"
 }'
-    $txJSON = $txJSON.replace("ADDRESS",$address)
+    $txJSON = $txJSON.replace("_ADDRESS_",$address)
     $message = Format-txJSON $txJSON
     Send-Message $message
     Receive-Message
