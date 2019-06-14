@@ -1,4 +1,9 @@
-## XRPowerShell.ps1
+<# 
+    XRPowerShell.ps1
+    ----------------
+
+    Version: 0.1.4
+#>
 
 Function Connect-XRPL {
     [CmdletBinding()]
@@ -7,13 +12,19 @@ Function Connect-XRPL {
         [String]$wssUri
     )
 
+    # Don't let Connect-XRPL overwrite an existing connection.
     if($webSocket) {
-        Write-Host "Error! Already connected to a websocket." -ForegroundColor Red
+        Write-Host "Error! Already connected to a websocket. `n`t- Use Disconnect-XRPL if you wish to close current connection." -ForegroundColor Red
         return
     }
 
-    $Global:webSocket = New-Object System.Net.WebSockets.ClientWebSocket
-    $Global:cancellationToken = New-Object System.Threading.CancellationToken
+    <#
+        These need to be accessible everywhere.
+        Testing as static variable. Should only be one of these at any one time
+        TODO: Find better alternative to global variables if possible
+    #>
+    static $Global:webSocket = New-Object System.Net.WebSockets.ClientWebSocket
+    static $Global:cancellationToken = New-Object System.Threading.CancellationToken
 
     try {
         $command = $webSocket.ConnectAsync($wssUri, $cancellationToken)
@@ -57,49 +68,9 @@ Function Get-ServerInfo {
     "command": "server_info"
 }'
 
-    #$encoding = [System.Text.Encoding]::UTF8
-    #$array = @();
-    #$array = $encoding.GetBytes($txJSON)
-
-    #$message = New-Object System.ArraySegment[byte] -ArgumentList @(,$array)
     $message = Format-txJSON $txJSON
     Send-Message $message
     Receive-Message
-    <#
-    $command = $webSocket.SendAsync($message, [System.Net.WebSockets.WebSocketMessageType]::Text, [System.Boolean]::TrueString, $cancellationToken)
-    
-    $start = Get-Date
-    $timeout = 30
-    while (!$command.IsCompleted) {
-        $elapsed = ((Get-Date) - $start).Seconds
-        if($elapsed -gt $timeout) {
-            Write-Host "Warning! Message took longer than $timeout and may not have been sent."
-            return
-        }
-        Start-Sleep -Milliseconds 100
-    }
-    Write-Host "Message sent to server" -ForegroundColor Cyan
-    #>
-    <#
-    $size = 1024
-    $array = [byte[]] @(,0) * $size
-    $receiveArr = New-Object System.ArraySegment[byte] -ArgumentList @(,$array)
-
-    $receiveMsg = ""
-    if($webSocket.State -eq 'Open') {
-        Do {
-            $command = $webSocket.ReceiveAsync($receiveArr, $cancellationToken)
-            while (!$command.IsCompleted) {
-                Start-Sleep -Milliseconds 100
-            }
-            $receiveArr.Array[0..($command.Result.Count - 1)] | foreach {$receiveMsg += [char]$_}
-        } until ($command.Result.Count -lt $size)
-    }
-    if ($receiveMsg) {
-        Write-Host "Message received from server" -ForegroundColor Green
-        return $inputObj = $receiveMsg
-    }
-    #>
 }
 
 Function Get-AccountInfo {
@@ -120,6 +91,10 @@ Function Get-AccountInfo {
     Receive-Message
 }
 
+<# 
+    Websocket object only accepts an array of bytes for their messages.
+    All JSON must be converted before being sent
+#>
 Function Format-txJSON {
     [CmdletBinding()]
     param(
