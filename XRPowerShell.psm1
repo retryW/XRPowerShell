@@ -105,6 +105,123 @@ Function Get-AccountInfo {
     Receive-Message
 }
 
+Function Get-AccountLines {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Address,
+        [Parameter(Mandatory=$false)]
+        [string]$Peer,
+        [Parameter(Mandatory=$false)]
+        [Int32]$Limit
+    )
+
+    $txJSON =
+'{
+    "command": "account_lines",
+    "account": "_ADDRESS_",
+    _PEER_
+    _LIMIT_
+}'
+    $txJSON = $txJSON.Replace("_ADDRESS_", $Address)
+    if ($Peer) {
+        $txJSON = $txJSON.Replace("_PEER_", "`"peer`": `"$Peer`",")
+    } else {
+        $txJSON = $txJSON.Replace("`n    _PEER_`n", "`n")
+    }
+    if ($Limit) {
+        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
+    } else {
+        $txJSON = $txJSON.Replace("`n    _LIMIT_`n", "`n")
+    }
+    # Remove comma (,) on last line causing JSON to become invalid
+    $txJSON = $txJSON.Replace(",`n}", "`n}")
+    Send-Message (Format-txJSON $txJSON)
+    Receive-Message
+}
+
+Function Get-AccountOffers {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Address,
+        [Parameter(Mandatory=$false)]
+        [Int32]$Limit
+    )
+    $txJSON =
+'{
+    "command": "account_offers",
+    "account": "_ADDRESS_",
+    _LIMIT_
+}'
+    $txJSON = $txJSON.replace("_ADDRESS_", $Address)
+    if ($Limit) {
+        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
+    } else {
+        $txJSON = $txJSON.Replace("`n    _LIMIT_`n", "`n")
+    }
+    $txJSON = $txJSON.Replace(",`n}", "`n}")
+    Send-Message (Format-txJSON $txJSON)
+    Receive-Message
+}
+
+Function Get-AccountTx {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Address,
+        [Parameter(Mandatory=$false)]
+        [Int32]$Limit,
+        [Parameter(Mandatory=$false)]
+        [Int32]$LedgerMax,
+        [Parameter(Mandatory=$false)]
+        [Int32]$LedgerMin,
+        [Parameter(Mandatory=$false)]
+        [Switch]$Binary,
+        [Parameter(Mandatory=$false)]
+        [Switch]$Forward
+    )
+    $txJSON =
+'{
+    "command": "account_tx",
+    "account": "_ADDRESS_",
+    _LIMIT_
+    "ledger_index_min": _MIN_,
+    "ledger_index_max": _MAX_,
+    "binary": _BINARY_,
+    "forward": _FORWARD_
+}'
+    $txJSON = $txJSON.replace("_ADDRESS_", $Address)
+    if ($Limit) {
+        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
+    } else {
+        $txJSON = $txJSON.Replace("`n    _LIMIT_`n", "`n")
+    }
+    if ($LedgerMin) {
+        $txJSON = $txJSON.Replace("_MIN_", $LedgerMin)
+    } else {
+        $txJSON = $txJSON.Replace("_MIN_", "-1")
+    }
+    if ($LedgerMax) {
+        $txJSON = $txJSON.Replace("_MAX_", $LedgerMax)
+    } else {
+        $txJSON = $txJSON.Replace("_MAX_", "-1")
+    }
+    if ($Binary) {
+        $txJSON = $txJSON.Replace("_BINARY_", "true")
+    } else {
+        $txJSON = $txJSON.Replace("_BINARY_", "false")
+    }
+    if ($Forward) {
+        $txJSON = $txJSON.Replace("_FORWARD_", "true")
+    } else {
+        $txJSON = $txJSON.Replace("_FORWARD_", "false")
+    }
+    
+    Send-Message (Format-txJSON $txJSON)
+    Receive-Message
+}
+
 Function Get-Ledger {
     [CmdletBinding()]
     param (
