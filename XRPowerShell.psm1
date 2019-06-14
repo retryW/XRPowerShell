@@ -2,7 +2,7 @@
     XRPowerShell.ps1
     ----------------
 
-    Version: 0.1.5
+    Version: 0.1.6
 #>
 
 Function Connect-XRPL {
@@ -103,6 +103,91 @@ Function Get-AccountInfo {
     $message = Format-txJSON $txJSON
     Send-Message $message
     Receive-Message
+}
+
+Function Get-Ledger {
+    [CmdletBinding()]
+    param (
+        # I hate variables starting with uppercase. But being a -Switch, looks stupid lowercase.
+        [Parameter(Mandatory=$false)]
+        [switch]$Full,
+        [Parameter(Mandatory=$false)]
+        [switch]$Accounts,
+        [Parameter(Mandatory=$false)]
+        [switch]$Transactions,
+        [Parameter(Mandatory=$false)]
+        [switch]$Expand,
+        [Parameter(Mandatory=$false)]
+        [switch]$OwnerFunds
+    )
+    $txJSON =
+'{
+    "command": "ledger",
+    "ledger_index": "_LEDGERINDEX_",
+    "full": "_FULL_",
+    "accounts": "_ACCOUNTS_",
+    "transactions": "_TRANSACTIONS_",
+    "expand": "_EXPAND_",
+    "owner_funds": "_OWNERFUNDS_"
+}'
+
+    if ($ledgerIndex) {
+        $txJSON = $txJSON.Replace("_LEDGERINDEX_", $ledgerIndex)
+    } else {
+        $txJSON = $txJSON.Replace('    "ledger_index": "_LEDGERINDEX_","', "")
+    }
+
+    if ($Full) {
+        $txJSON = $txJSON.Replace("_FULL_", "true")
+    } else {
+        $txJSON = $txJSON.Replace("_FULL_", "false")
+    }
+
+    if ($Accounts) {
+        $txJSON = $txJSON.Replace("_ACCOUNTS_", "true")
+    } else {
+        $txJSON = $txJSON.Replace("_ACCOUNTS_", "false")
+    }
+
+    if ($Transactions) {
+        $txJSON = $txJSON.Replace("_TRANSACTIONS_", "true")
+    } else {
+        $txJSON = $txJSON.Replace("_TRANSACTIONS_", "false")
+    }
+
+    if ($Expand) {
+        $txJSON = $txJSON.Replace("_EXPAND_", "true")
+    } else {
+        $txJSON = $txJSON.Replace("_EXPAND_", "false")
+    }
+
+    if ($OwnerFunds) {
+        $txJSON = $txJSON.Replace("_OWNERFUNDS_", "true")
+    } else {
+        $txJSON = $txJSON.Replace("_OWNERFUNDS_", "false")
+    }
+}
+
+Function Get-LedgerClosed {
+    $txJSON =
+'{
+    "command": "ledger_closed"    
+}'
+    Send-Message (Format-txJSON $txJSON)
+    Receive-Message
+}
+
+Function Get-LedgerCurrent {
+    $txJSON =
+'{
+    "command": "ledger_current"    
+}'
+    Send-Message (Format-txJSON $txJSON)
+    Receive-Message
+}
+
+Function Get-LedgerEntry {
+ # TODO
 }
 
 <# 
