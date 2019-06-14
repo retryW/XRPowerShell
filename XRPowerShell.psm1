@@ -127,15 +127,15 @@ Function Get-AccountLines {
     if ($Peer) {
         $txJSON = $txJSON.Replace("_PEER_", "`"peer`": `"$Peer`",")
     } else {
-        $txJSON = $txJSON.Replace("`n    _PEER_`n", "`n")
+        $txJSON = $txJSON -replace "\s+_PEER_", "`r`n"
     }
     if ($Limit) {
         $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
     } else {
-        $txJSON = $txJSON.Replace("`n    _LIMIT_`n", "`n")
+        $txJSON = $txJSON -replace "\s+_LIMIT_", "`r`n"
     }
     # Remove comma (,) on last line causing JSON to become invalid
-    $txJSON = $txJSON.Replace(",`n}", "`n}")
+    $txJSON = $txJSON -replace ",\s+}", "`r`n}"
     Send-Message (Format-txJSON $txJSON)
     Receive-Message
 }
@@ -158,9 +158,9 @@ Function Get-AccountOffers {
     if ($Limit) {
         $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
     } else {
-        $txJSON = $txJSON.Replace("`n    _LIMIT_`n", "`n")
+        $txJSON = $txJSON -replace "\s+_LIMIT_", "`r`n"
     }
-    $txJSON = $txJSON.Replace(",`n}", "`n}")
+    $txJSON = $txJSON -replace ",\s+}", "`r`n}"
     Send-Message (Format-txJSON $txJSON)
     Receive-Message
 }
@@ -195,7 +195,8 @@ Function Get-AccountTx {
     if ($Limit) {
         $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
     } else {
-        $txJSON = $txJSON.Replace("`n    _LIMIT_`n", "`n")
+        #$txJSON = $txJSON.Replace("`n    _LIMIT_`n", "`n")
+        $txJSON = $txJSON -replace "\s+_LIMIT_", "`r`n"
     }
     if ($LedgerMin) {
         $txJSON = $txJSON.Replace("_MIN_", $LedgerMin)
