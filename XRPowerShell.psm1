@@ -158,11 +158,12 @@ Function Get-AccountOffers {
     if ($Limit) {
         $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
     } else {
-        $txJSON = $txJSON.Replace("`n    _LIMIT_`n", "`n")
+        $txJSON = $txJSON.Replace("`n    _LIMIT_", "")
     }
     $txJSON = $txJSON.Replace(",`n}", "`n}")
-    Send-Message (Format-txJSON $txJSON)
-    Receive-Message
+    #Send-Message (Format-txJSON $txJSON)
+    #Receive-Message
+    $txJSON
 }
 
 Function Get-AccountTx {
