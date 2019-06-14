@@ -2,7 +2,7 @@
     XRPowerShell.ps1
     ----------------
 
-    Version: 0.1.4
+    Version: 0.1.5
 #>
 
 Function Connect-XRPL {
@@ -13,18 +13,17 @@ Function Connect-XRPL {
     )
 
     # Don't let Connect-XRPL overwrite an existing connection.
-    if($webSocket) {
+    if($webSocket.State -eq 'Open') {
         Write-Host "Error! Already connected to a websocket. `n`t- Use Disconnect-XRPL if you wish to close current connection." -ForegroundColor Red
         return
     }
 
     <#
         These need to be accessible everywhere.
-        Testing as static variable. Should only be one of these at any one time
         TODO: Find better alternative to global variables if possible
     #>
-    static $Global:webSocket = New-Object System.Net.WebSockets.ClientWebSocket
-    static $Global:cancellationToken = New-Object System.Threading.CancellationToken
+    $Global:webSocket = New-Object System.Net.WebSockets.ClientWebSocket
+    $Global:cancellationToken = New-Object System.Threading.CancellationToken
 
     try {
         $command = $webSocket.ConnectAsync($wssUri, $cancellationToken)
@@ -62,14 +61,29 @@ Function Disconnect-XRPL {
 }
 
 Function Get-ServerInfo {
-
     $txJSON = 
 '{
     "command": "server_info"
 }'
+    Send-Message (Format-txJSON $txJSON)
+    Receive-Message
+}
 
-    $message = Format-txJSON $txJSON
-    Send-Message $message
+Function Get-ServerState {
+    $txJSON =
+'{
+    "command": "server_state"
+}'
+    Send-Message (Format-txJSON $txJSON)
+    Receive-Message
+}
+
+Function Ping-Server {
+    $txJSON =
+'{
+    "command": "ping"
+}'
+    Send-Message (Format-txJSON $txJSON)
     Receive-Message
 }
 
