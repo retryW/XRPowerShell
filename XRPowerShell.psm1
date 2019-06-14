@@ -2,7 +2,7 @@
     XRPowerShell.ps1
     ----------------
 
-    Version: 0.1.6
+    Version: 0.1.7
 #>
 
 Function Connect-XRPL {
@@ -110,6 +110,10 @@ Function Get-Ledger {
     param (
         # I hate variables starting with uppercase. But being a -Switch, looks stupid lowercase.
         [Parameter(Mandatory=$false)]
+        [string]$Hash,
+        [Parameter(Mandatory=$false)]
+        $LedgerIndex,
+        [Parameter(Mandatory=$false)]
         [switch]$Full,
         [Parameter(Mandatory=$false)]
         [switch]$Accounts,
@@ -123,6 +127,7 @@ Function Get-Ledger {
     $txJSON =
 '{
     "command": "ledger",
+    "ledger_hash": "_LEDGERHASH_",
     "ledger_index": "_LEDGERINDEX_",
     "full": "_FULL_",
     "accounts": "_ACCOUNTS_",
@@ -130,42 +135,77 @@ Function Get-Ledger {
     "expand": "_EXPAND_",
     "owner_funds": "_OWNERFUNDS_"
 }'
-
-    if ($ledgerIndex) {
-        $txJSON = $txJSON.Replace("_LEDGERINDEX_", $ledgerIndex)
+    if ($Hash) {
+        $txJSON = $txJSON.Replace('_LEDGERHASH_', $Hash)
+        # If -Hash is used, we don't want to also specify a ledger_index.
+        $txJSON = $txJSON.Replace('    "ledger_index": "_LEDGERINDEX_",', "")
     } else {
-        $txJSON = $txJSON.Replace('    "ledger_index": "_LEDGERINDEX_","', "")
+        $txJSON = $txJSON.Replace('    "ledger_hash": "_LEDGERHASH_",', "")
+        
+        # If -Hash is not used, check for ledger_index.
+        if ($LedgerIndex) {
+            $type = $LedgerIndex.GetType().Name
+            if ($type -eq "String") {
+                switch($LedgerIndex) {
+                    "validated" {
+                        $txJSON = $txJSON.Replace('_LEDGERINDEX_', "validated")
+                        break;
+                    }
+                    "closed" {
+                        $txJSON = $txJSON.Replace('_LEDGERINDEX_', "closed")
+                        break;
+                    }
+                    "current" {
+                        $txJSON = $txJSON.Replace('_LEDGERINDEX_', "current")
+                        break;
+                    }
+                    default {
+                        $txJSON = $txJSON.Replace('    "ledger_index": "_LEDGERINDEX_",', "")
+                        break;
+                    }
+                }
+            } elseif ($type -eq "Int32" -or $type -eq "Decimal") {
+                $txJSON = $txJSON.Replace('"_LEDGERINDEX_"', $LedgerIndex)
+            } else {
+                $txJSON = $txJSON.Replace('    "ledger_index": "_LEDGERINDEX_",', "")
+            }
+        } else {
+            $txJSON = $txJSON.Replace('    "ledger_index": "_LEDGERINDEX_",', "")
+        }
     }
 
     if ($Full) {
-        $txJSON = $txJSON.Replace("_FULL_", "true")
+        $txJSON = $txJSON.Replace('"_FULL_"', "true")
     } else {
-        $txJSON = $txJSON.Replace("_FULL_", "false")
+        $txJSON = $txJSON.Replace('"_FULL_"', "false")
     }
 
     if ($Accounts) {
-        $txJSON = $txJSON.Replace("_ACCOUNTS_", "true")
+        $txJSON = $txJSON.Replace('"_ACCOUNTS_"', "true")
     } else {
-        $txJSON = $txJSON.Replace("_ACCOUNTS_", "false")
+        $txJSON = $txJSON.Replace('"_ACCOUNTS_"', "false")
     }
 
     if ($Transactions) {
-        $txJSON = $txJSON.Replace("_TRANSACTIONS_", "true")
+        $txJSON = $txJSON.Replace('"_TRANSACTIONS_"', "true")
     } else {
-        $txJSON = $txJSON.Replace("_TRANSACTIONS_", "false")
+        $txJSON = $txJSON.Replace('"_TRANSACTIONS_"', "false")
     }
 
     if ($Expand) {
-        $txJSON = $txJSON.Replace("_EXPAND_", "true")
+        $txJSON = $txJSON.Replace('"_EXPAND_"', "true")
     } else {
-        $txJSON = $txJSON.Replace("_EXPAND_", "false")
+        $txJSON = $txJSON.Replace('"_EXPAND_"', "false")
     }
 
     if ($OwnerFunds) {
-        $txJSON = $txJSON.Replace("_OWNERFUNDS_", "true")
+        $txJSON = $txJSON.Replace('"_OWNERFUNDS_"', "true")
     } else {
-        $txJSON = $txJSON.Replace("_OWNERFUNDS_", "false")
+        $txJSON = $txJSON.Replace('"_OWNERFUNDS_"', "false")
     }
+
+    Send-Message (Format-txJSON $txJSON)
+    Receive-Message
 }
 
 Function Get-LedgerClosed {
