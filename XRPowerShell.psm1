@@ -173,6 +173,8 @@ Function Get-AccountTx {
         [Parameter(Mandatory=$false)]
         [Int32]$Limit,
         [Parameter(Mandatory=$false)]
+        [string]$Marker,
+        [Parameter(Mandatory=$false)]
         [Int32]$LedgerMax,
         [Parameter(Mandatory=$false)]
         [Int32]$LedgerMin,
@@ -186,6 +188,7 @@ Function Get-AccountTx {
     "command": "account_tx",
     "account": "_ADDRESS_",
     _LIMIT_
+    _MARKER_
     "ledger_index_min": _MIN_,
     "ledger_index_max": _MAX_,
     "binary": _BINARY_,
@@ -197,6 +200,11 @@ Function Get-AccountTx {
     } else {
         #$txJSON = $txJSON.Replace("`n    _LIMIT_`n", "`n")
         $txJSON = $txJSON -replace "\s+_LIMIT_", "`r`n"
+    }
+    if ($Marker) {
+        $txJSON = $txJSON.Replace("_MARKER_", "`"marker`": $Limit,")
+    } else {
+        $txJSON = $txJSON -replace "\s+_MARKER_", "`r`n"
     }
     if ($LedgerMin) {
         $txJSON = $txJSON.Replace("_MIN_", $LedgerMin)
