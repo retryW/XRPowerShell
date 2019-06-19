@@ -4,6 +4,15 @@
 
     Version: 0.1.7
 #>
+enum AccountObjectTypes {
+    Check
+    DepositPreauth
+    Escrow
+    Offer
+    PaymentChannel
+    SignerList
+    State
+}
 
 Function Connect-XRPL {
     [CmdletBinding()]
@@ -60,6 +69,7 @@ Function Disconnect-XRPL {
     }
 }
 
+#region Server Functions
 Function Get-ServerInfo {
     $txJSON = 
 '{
@@ -86,22 +96,254 @@ Function Ping-Server {
     Send-Message (Format-txJSON $txJSON)
     Receive-Message
 }
+#endregion
+
+#region Account Functions
+Function Get-AccountChannels {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$Address,
+        [Parameter(Mandatory=$false)]
+        [string]$Destination,
+        [Parameter(Mandatory=$false)]
+        [string]$Hash,
+        [Parameter(Mandatory=$false)]
+        $LedgerIndex,
+        [Parameter(Mandatory=$false)]
+        [Int32]$Limit,
+        [Parameter(Mandatory=$false)]
+        [string]$Marker
+    )
+    
+    $tsJSON =
+'{
+    "command": "account_channels",
+    "account": "_ADDRESS_",
+    _DESTINATION_
+    _HASH_
+    _LEDGERINDEX_
+    _LIMIT_
+    _MARKER_
+}'
+    $txJSON = $txJSON.replace("_ADDRESS_",$Address)
+    if ($Destination) {
+        $txJSON = $txJSON.Replace("_DESTINATION_", "`"destination_account`": $Destination,")
+    } else {
+        $txJSON = $txJSON -replace "\s+_DESTINATION_", "`r`n"
+    }
+    if ($Hash) {
+        $txJSON = $txJSON.Replace("_HASH_", "`"ledger_hash`": `"$Hash`",")
+        # If -Hash is used, we don't want to also specify a ledger_index.
+        $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+    } else {
+        $txJSON = $txJSON -replace "\s+_HASH_", "`r`n"
+        # If -Hash is not used, check for ledger_index.
+        if ($LedgerIndex) {
+            $type = $LedgerIndex.GetType().Name
+            if ($type -eq "String") {
+                switch($LedgerIndex) {
+                    "validated" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"validated`",")
+                        break;
+                    }
+                    "closed" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"closed`",")
+                        break;
+                    }
+                    "current" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"current`",")
+                        break;
+                    }
+                    default {
+                        Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+                        $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+                        break;
+                    }
+                }
+            } elseif ($type -eq "Int32" -or $type -eq "Decimal") {
+                $txJSON = $txJSON.Replace('"_LEDGERINDEX_"', "`"ledger_index`": $LedgerIndex,")
+            } else {
+                Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+                $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+            }
+        } else {
+            Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+            $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+        }
+    }
+    if ($Limit) {
+        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
+    } else {
+        $txJSON = $txJSON -replace "\s+_LIMIT_", "`r`n"
+    }
+    if ($MARKER) {
+        $txJSON = $txJSON.Replace("_MARKER_", "`"marker`": $Marker")
+    } else {
+        $txJSON = $txJSON -replace "\s+_MARKER_", "`r`n"
+        # Remove comma (,) on last line causing JSON to become invalid (Only required if Marker isn't specified)
+        $txJSON = $txJSON -replace ",\s+}", "`r`n}"
+    }
+    Send-Message (Format-txJSON $txJSON)
+    Receive-Message
+}
+
+Function Get-AccountCurrencies {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$Address,
+        [Parameter(Mandatory=$false)]
+        [string]$Hash,
+        [Parameter(Mandatory=$false)]
+        $LedgerIndex,
+        [Parameter(Mandatory=$false)]
+        [switch]$Strict
+    )
+    $txJSON = 
+'{
+    "command": "account_info",
+    "account": "_ADDRESS_",
+    _HASH_
+    _LEDGERINDEX_
+    "strict": _STRICT_
+}'
+    $txJSON = $txJSON.replace("_ADDRESS_",$Address)
+    if ($Hash) {
+        $txJSON = $txJSON.Replace("_HASH_", "`"ledger_hash`": `"$Hash`",")
+        # If -Hash is used, we don't want to also specify a ledger_index.
+        $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+    } else {
+        $txJSON = $txJSON -replace "\s+_HASH_", "`r`n"
+        # If -Hash is not used, check for ledger_index.
+        if ($LedgerIndex) {
+            $type = $LedgerIndex.GetType().Name
+            if ($type -eq "String") {
+                switch($LedgerIndex) {
+                    "validated" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"validated`",")
+                        break;
+                    }
+                    "closed" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"closed`",")
+                        break;
+                    }
+                    "current" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"current`",")
+                        break;
+                    }
+                    default {
+                        Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+                        $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+                        break;
+                    }
+                }
+            } elseif ($type -eq "Int32" -or $type -eq "Decimal") {
+                $txJSON = $txJSON.Replace('"_LEDGERINDEX_"', "`"ledger_index`": $LedgerIndex,")
+            } else {
+                Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+                $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+            }
+        } else {
+            Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+            $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+        }
+    }
+    if ($Strict) {
+        $txJSON = $txJSON.Replace("_STRICT_", "true")
+    } else {
+        $txJSON = $txJSON.Replace("_STRICT_", "false")
+    }
+
+    Send-Message (Format-txJSON $txJSON)
+    Receive-Message
+}
 
 Function Get-AccountInfo {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)]
-        [string]$address
+        [string]$Address,
+        [Parameter(Mandatory=$false)]
+        [string]$Hash,
+        [Parameter(Mandatory=$false)]
+        $LedgerIndex,
+        [Parameter(Mandatory=$false)]
+        [switch]$Queue,
+        [Parameter(Mandatory=$false)]
+        [switch]$SignerLists,
+        [Parameter(Mandatory=$false)]
+        [switch]$Strict
     )
 
     $txJSON = 
 '{
     "command": "account_info",
-    "account": "_ADDRESS_"
+    "account": "_ADDRESS_",
+    _HASH_
+    _LEDGERINDEX_
+    "queue": _QUEUE_,
+    "signer_lists": _SIGNLISTS_,
+    "strict": _STRICT_
 }'
-    $txJSON = $txJSON.replace("_ADDRESS_",$address)
-    $message = Format-txJSON $txJSON
-    Send-Message $message
+    $txJSON = $txJSON.replace("_ADDRESS_",$Address)
+    if ($Hash) {
+        $txJSON = $txJSON.Replace("_HASH_", "`"ledger_hash`": $Hash,")
+        # If -Hash is used, we don't want to also specify a ledger_index.
+        $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+    } else {
+        $txJSON = $txJSON.Replace("_HASH_", "`"ledger_hash`": `"$Hash`",")
+        # If -Hash is not used, check for ledger_index.
+        if ($LedgerIndex) {
+            $type = $LedgerIndex.GetType().Name
+            if ($type -eq "String") {
+                switch($LedgerIndex) {
+                    "validated" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"validated`",")
+                        break;
+                    }
+                    "closed" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"closed`",")
+                        break;
+                    }
+                    "current" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"current`",")
+                        break;
+                    }
+                    default {
+                        Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+                        $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+                        break;
+                    }
+                }
+            } elseif ($type -eq "Int32" -or $type -eq "Decimal") {
+                $txJSON = $txJSON.Replace('"_LEDGERINDEX_"', "`"ledger_index`": $LedgerIndex,")
+            } else {
+                Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+                $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+            }
+        } else {
+            Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+            $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+        }
+    }
+    if ($Queue) {
+        $txJSON = $txJSON.Replace("_QUEUE_", "true")
+    } else {
+        $txJSON = $txJSON.Replace("_QUEUE_", "false")
+    }
+    if ($SignerLists) {
+        $txJSON = $txJSON.Replace("_SIGNLISTS_", "true")
+    } else {
+        $txJSON = $txJSON.Replace("_SIGNLISTS_", "false")
+    }
+    if ($Strict) {
+        $txJSON = $txJSON.Replace("_STRICT_", "true")
+    } else {
+        $txJSON = $txJSON.Replace("_STRICT_", "false")
+    }
+
+    Send-Message (Format-txJSON $txJSON)
     Receive-Message
 }
 
@@ -111,19 +353,68 @@ Function Get-AccountLines {
         [Parameter(Mandatory=$true)]
         [string]$Address,
         [Parameter(Mandatory=$false)]
+        [string]$Hash,
+        [Parameter(Mandatory=$false)]
+        $LedgerIndex,
+        [Parameter(Mandatory=$false)]
         [string]$Peer,
         [Parameter(Mandatory=$false)]
-        [Int32]$Limit
+        [Int32]$Limit,
+        [Parameter(Mandatory=$false)]
+        [Int32]$Marker
     )
 
     $txJSON =
 '{
     "command": "account_lines",
     "account": "_ADDRESS_",
+    _HASH_
+    _LEDGERINDEX_
     _PEER_
     _LIMIT_
+    _MARKER_
 }'
     $txJSON = $txJSON.Replace("_ADDRESS_", $Address)
+    if ($Hash) {
+        $txJSON = $txJSON.Replace("_HASH_", "`"ledger_hash`": `"$Hash`",")
+        # If -Hash is used, we don't want to also specify a ledger_index.
+        $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+    } else {
+        $txJSON = $txJSON -replace "\s+_HASH_", "`r`n"
+        # If -Hash is not used, check for ledger_index.
+        if ($LedgerIndex) {
+            $type = $LedgerIndex.GetType().Name
+            if ($type -eq "String") {
+                switch($LedgerIndex) {
+                    "validated" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"validated`",")
+                        break;
+                    }
+                    "closed" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"closed`",")
+                        break;
+                    }
+                    "current" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"current`",")
+                        break;
+                    }
+                    default {
+                        Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+                        $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+                        break;
+                    }
+                }
+            } elseif ($type -eq "Int32" -or $type -eq "Decimal") {
+                $txJSON = $txJSON.Replace('"_LEDGERINDEX_"', "`"ledger_index`": $LedgerIndex,")
+            } else {
+                Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+                $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+            }
+        } else {
+            Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+            $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+        }
+    }
     if ($Peer) {
         $txJSON = $txJSON.Replace("_PEER_", "`"peer`": `"$Peer`",")
     } else {
@@ -134,10 +425,105 @@ Function Get-AccountLines {
     } else {
         $txJSON = $txJSON -replace "\s+_LIMIT_", "`r`n"
     }
-    # Remove comma (,) on last line causing JSON to become invalid
-    $txJSON = $txJSON -replace ",\s+}", "`r`n}"
+        if ($Marker) {
+        $txJSON = $txJSON.Replace("_MARKER_", "`"marker`": $Marker")
+    } else {
+        $txJSON = $txJSON -replace "\s+_MARKER_", "`r`n"
+        # Remove comma (,) on last line causing JSON to become invalid (Only required if Marker isn't specified)
+        $txJSON = $txJSON -replace ",\s+}", "`r`n}"
+    }
+
     Send-Message (Format-txJSON $txJSON)
     Receive-Message
+}
+
+Function Get-AccountObjects {
+        [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Address,
+        [Parameter(Mandatory=$false)]
+        [AccountObjectTypes]$Type
+        [Parameter(Mandatory=$false)]
+        [string]$Hash,
+        [Parameter(Mandatory=$false)]
+        $LedgerIndex,
+        [Parameter(Mandatory=$false)]
+        [string]$Peer,
+        [Parameter(Mandatory=$false)]
+        [Int32]$Limit,
+        [Parameter(Mandatory=$false)]
+        [Int32]$Marker
+    )
+
+    $txJSON =
+'{
+    "command": "account_objects",
+    "account": "_ADDRESS_",
+    _TYPE_
+    _HASH_
+    _LEDGERINDEX_
+    _LIMIT_
+    _MARKER_
+}'
+    $txJSON = $txJSON.Replace("_ADDRESS_", $Address)
+    if ($Type) {
+        $txJSON = $txJSON.Replace("_TYPE_", "`"type`": `"$Type`",")
+    } else {
+        $txJSON = $txJSON -replace "\s+_TYPE_", "`r`n"
+    }
+    if ($Hash) {
+        $txJSON = $txJSON.Replace("_HASH_", "`"ledger_hash`": `"$Hash`",")
+        # If -Hash is used, we don't want to also specify a ledger_index.
+        $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+    } else {
+        $txJSON = $txJSON -replace "\s+_HASH_", "`r`n"
+        # If -Hash is not used, check for ledger_index.
+        if ($LedgerIndex) {
+            $type = $LedgerIndex.GetType().Name
+            if ($type -eq "String") {
+                switch($LedgerIndex) {
+                    "validated" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"validated`",")
+                        break;
+                    }
+                    "closed" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"closed`",")
+                        break;
+                    }
+                    "current" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"current`",")
+                        break;
+                    }
+                    default {
+                        Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+                        $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+                        break;
+                    }
+                }
+            } elseif ($type -eq "Int32" -or $type -eq "Decimal") {
+                $txJSON = $txJSON.Replace('"_LEDGERINDEX_"', "`"ledger_index`": $LedgerIndex,")
+            } else {
+                Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+                $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+            }
+        } else {
+            Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+            $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+        }
+    }
+    if ($Limit) {
+        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
+    } else {
+        $txJSON = $txJSON -replace "\s+_LIMIT_", "`r`n"
+    }
+    if ($Marker) {
+        $txJSON = $txJSON.Replace("_MARKER_", "`"marker`": $Marker")
+    } else {
+        $txJSON = $txJSON -replace "\s+_MARKER_", "`r`n"
+        # Remove comma (,) on last line causing JSON to become invalid (Only required if Marker isn't specified)
+        $txJSON = $txJSON -replace ",\s+}", "`r`n}"
+    }
 }
 
 Function Get-AccountOffers {
@@ -152,15 +538,65 @@ Function Get-AccountOffers {
 '{
     "command": "account_offers",
     "account": "_ADDRESS_",
+    _HASH_
+    _LEDGERINDEX_
     _LIMIT_
+    _MARKER_
 }'
     $txJSON = $txJSON.replace("_ADDRESS_", $Address)
+    if ($Hash) {
+        $txJSON = $txJSON.Replace("_HASH_", "`"ledger_hash`": `"$Hash`",")
+        # If -Hash is used, we don't want to also specify a ledger_index.
+        $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+    } else {
+        $txJSON = $txJSON -replace "\s+_HASH_", "`r`n"
+        # If -Hash is not used, check for ledger_index.
+        if ($LedgerIndex) {
+            $type = $LedgerIndex.GetType().Name
+            if ($type -eq "String") {
+                switch($LedgerIndex) {
+                    "validated" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"validated`",")
+                        break;
+                    }
+                    "closed" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"closed`",")
+                        break;
+                    }
+                    "current" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"current`",")
+                        break;
+                    }
+                    default {
+                        Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+                        $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+                        break;
+                    }
+                }
+            } elseif ($type -eq "Int32" -or $type -eq "Decimal") {
+                $txJSON = $txJSON.Replace('"_LEDGERINDEX_"', "`"ledger_index`": $LedgerIndex,")
+            } else {
+                Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+                $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+            }
+        } else {
+            Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+            $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+        }
+    }
     if ($Limit) {
         $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
     } else {
         $txJSON = $txJSON -replace "\s+_LIMIT_", "`r`n"
     }
-    $txJSON = $txJSON -replace ",\s+}", "`r`n}"
+    if ($Marker) {
+        $txJSON = $txJSON.Replace("_MARKER_", "`"marker`": $Marker")
+    } else {
+        $txJSON = $txJSON -replace "\s+_MARKER_", "`r`n"
+        # Remove comma (,) on last line causing JSON to become invalid (Only required if Marker isn't specified)
+        $txJSON = $txJSON -replace ",\s+}", "`r`n}"
+    }
+
     Send-Message (Format-txJSON $txJSON)
     Receive-Message
 }
@@ -170,6 +606,10 @@ Function Get-AccountTx {
     param(
         [Parameter(Mandatory=$true)]
         [string]$Address,
+        [Parameter(Mandatory=$false)]
+        [string]$Hash,
+        [Parameter(Mandatory=$false)]
+        [string]$LedgerIndex,
         [Parameter(Mandatory=$false)]
         [Int32]$Limit,
         [Parameter(Mandatory=$false)]
@@ -187,6 +627,8 @@ Function Get-AccountTx {
 '{
     "command": "account_tx",
     "account": "_ADDRESS_",
+    _HASH_
+    _LEDGERINDEX_
     _LIMIT_
     _MARKER_
     "ledger_index_min": _MIN_,
@@ -195,14 +637,53 @@ Function Get-AccountTx {
     "forward": _FORWARD_
 }'
     $txJSON = $txJSON.replace("_ADDRESS_", $Address)
+    if ($Hash) {
+        $txJSON = $txJSON.Replace("_HASH_", "`"ledger_hash`": `"$Hash`",")
+        # If -Hash is used, we don't want to also specify a ledger_index.
+        $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+    } else {
+        $txJSON = $txJSON -replace "\s+_HASH_", "`r`n"
+        # If -Hash is not used, check for ledger_index.
+    if ($LedgerIndex) {
+            $type = $LedgerIndex.GetType().Name
+            if ($type -eq "String") {
+                switch($LedgerIndex) {
+                    "validated" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"validated`",")
+                        break;
+                    }
+                    "closed" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"closed`",")
+                        break;
+                    }
+                    "current" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"current`",")
+                        break;
+                    }
+                    default {
+                        Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+                        $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+                        break;
+                    }
+                }
+            } elseif ($type -eq "Int32" -or $type -eq "Decimal") {
+                $txJSON = $txJSON.Replace('"_LEDGERINDEX_"', "`"ledger_index`": $LedgerIndex,")
+            } else {
+                Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+                $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+            }
+        } else {
+            Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+            $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+        }
+    }
     if ($Limit) {
         $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
     } else {
-        #$txJSON = $txJSON.Replace("`n    _LIMIT_`n", "`n")
         $txJSON = $txJSON -replace "\s+_LIMIT_", "`r`n"
     }
     if ($Marker) {
-        $txJSON = $txJSON.Replace("_MARKER_", "`"marker`": $Limit,")
+        $txJSON = $txJSON.Replace("_MARKER_", "`"marker`": `"$Marker`",")
     } else {
         $txJSON = $txJSON -replace "\s+_MARKER_", "`r`n"
     }
@@ -231,6 +712,37 @@ Function Get-AccountTx {
     Receive-Message
 }
 
+Function Get-GatewayBalances {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Address,
+        [Parameter(Mandatory=$false)]
+        [string]$Hash,
+        [Parameter(Mandatory=$false)]
+        [string]$LedgerIndex,
+        [Parameter(Mandatory=$false)]
+        $HotWallet,
+        [Parameter(Mandatory=$false)]
+        [Switch]$Strict
+    )
+    $txJSON =
+'{
+    "command": "account_tx",
+    "account": "_ADDRESS_",
+    _HASH_
+    _LEDGERINDEX_
+    _LIMIT_
+    _MARKER_
+    "ledger_index_min": _MIN_,
+    "ledger_index_max": _MAX_,
+    "binary": _BINARY_,
+    "forward": _FORWARD_
+}'
+}
+#endregion
+
+#region Ledger Functions
 Function Get-Ledger {
     [CmdletBinding()]
     param (
@@ -355,7 +867,9 @@ Function Get-LedgerCurrent {
 Function Get-LedgerEntry {
  # TODO
 }
+#endregion
 
+#region Helper Functions
 <# 
     Websocket object only accepts an array of bytes for their messages.
     All JSON must be converted before being sent
@@ -423,5 +937,6 @@ Function ConvertTo-ReadableJSON {
     )
     return $inString | ConvertFrom-Json | ConvertTo-Json -Depth 10
 }
+#endregion
 
 Export-ModuleMember -Function *
