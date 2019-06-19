@@ -425,7 +425,7 @@ Function Get-AccountLines {
     } else {
         $txJSON = $txJSON -replace "\s+_LIMIT_", "`r`n"
     }
-        if ($Marker) {
+    if ($Marker) {
         $txJSON = $txJSON.Replace("_MARKER_", "`"marker`": $Marker")
     } else {
         $txJSON = $txJSON -replace "\s+_MARKER_", "`r`n"
@@ -645,7 +645,7 @@ Function Get-AccountTx {
         $txJSON = $txJSON -replace "\s+_HASH_", "`r`n"
         # If -Hash is not used, check for ledger_index.
     if ($LedgerIndex) {
-            $type = $LedgerIndex.GetType().Name
+        $type = $LedgerIndex.GetType().Name
             if ($type -eq "String") {
                 switch($LedgerIndex) {
                     "validated" {
@@ -732,13 +732,75 @@ Function Get-GatewayBalances {
     "account": "_ADDRESS_",
     _HASH_
     _LEDGERINDEX_
-    _LIMIT_
-    _MARKER_
-    "ledger_index_min": _MIN_,
-    "ledger_index_max": _MAX_,
-    "binary": _BINARY_,
-    "forward": _FORWARD_
+    _HOTWALLET_
+    "strict": _STRICT_
 }'
+    $txJSON = $txJSON.replace("_ADDRESS_", $Address)
+    if ($Hash) {
+        $txJSON = $txJSON.Replace("_HASH_", "`"ledger_hash`": `"$Hash`",")
+        # If -Hash is used, we don't want to also specify a ledger_index.
+        $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+    } else {
+        $txJSON = $txJSON -replace "\s+_HASH_", "`r`n"
+        # If -Hash is not used, check for ledger_index.
+    if ($LedgerIndex) {
+        $type = $LedgerIndex.GetType().Name
+            if ($type -eq "String") {
+                switch($LedgerIndex) {
+                    "validated" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"validated`",")
+                        break;
+                    }
+                    "closed" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"closed`",")
+                        break;
+                    }
+                    "current" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"current`",")
+                        break;
+                    }
+                    default {
+                        Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+                        $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+                        break;
+                    }
+                }
+            } elseif ($type -eq "Int32" -or $type -eq "Decimal") {
+                $txJSON = $txJSON.Replace('"_LEDGERINDEX_"', "`"ledger_index`": $LedgerIndex,")
+            } else {
+                Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+                $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+            }
+        } else {
+            Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+            $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+        }
+    }
+    if ($HotWallet) {
+        if ($HotWallet.GetType().Name -eq "String") {
+            $txJSON = $txJSON.Replace('"_HOTWALLET_"', "`"hotwallet`": `"$HotWallet`",")
+        } elseif ($HotWallet.GetType().Name -eq "Object[]") {
+            $walletStr = "["
+            foreach ($wallet in $HotWallet) {
+                if ($wallet.GetType().Name -eq "String") {
+                    $walletStr += "`"$wallet`","
+                } else {
+                    $txJSON = $txJSON -replace "\s+_HOTWALLET_", "`r`n"
+                    break
+                }
+            }
+            # Remove extra ',' from end of string
+            $walletStr = $walletStr.Substring(0,$walletStr.Length-1) + "]"
+            $txJSON = $txJSON.Replace('"_HOTWALLET_"', "`"hotwallet`": $LedgerIndex,")
+        } else {
+            $txJSON = $txJSON -replace "\s+_HOTWALLET_", "`r`n"
+        }
+    }
+    if ($Strict) {
+        $txJSON = $txJSON.Replace("_STRICT_", "true")
+    } else {
+        $txJSON = $txJSON.Replace("_STRICT_", "false")
+    }
 }
 #endregion
 
