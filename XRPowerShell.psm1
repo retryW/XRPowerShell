@@ -802,6 +802,75 @@ Function Get-GatewayBalances {
         $txJSON = $txJSON.Replace("_STRICT_", "false")
     }
 }
+
+Get-NoRippleCheck {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$Address,
+        [Parameter(Mandatory=$true)]
+        [string]$Role,
+        [Parameter(Mandatory=$false)]
+        [Switch]$Transactions,
+        [Parameter(Mandatory=$false)]
+        [Int32]$Limit,
+        [Parameter(Mandatory=$false)]
+        [string]$Hash,
+        [Parameter(Mandatory=$false)]
+        $LedgerIndex
+    )
+    $txJSON =
+'{
+    "command": "noripple_check",
+    "account": "_ADDRESS_",
+    "role": "_ROLE_",
+    _LIMIT_
+    _HASH_
+    _LEDGERINDEX_
+    "transactions": _TRANSACTIONS_
+}'
+    $txJSON = $txJSON.replace("_ADDRESS_", $Address)
+    if ($Hash) {
+        $txJSON = $txJSON.Replace("_HASH_", "`"ledger_hash`": `"$Hash`",")
+        # If -Hash is used, we don't want to also specify a ledger_index.
+        $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+    } else {
+        $txJSON = $txJSON -replace "\s+_HASH_", "`r`n"
+        # If -Hash is not used, check for ledger_index.
+    if ($LedgerIndex) {
+        $type = $LedgerIndex.GetType().Name
+            if ($type -eq "String") {
+                switch($LedgerIndex) {
+                    "validated" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"validated`",")
+                        break;
+                    }
+                    "closed" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"closed`",")
+                        break;
+                    }
+                    "current" {
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"current`",")
+                        break;
+                    }
+                    default {
+                        Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+                        $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+                        break;
+                    }
+                }
+            } elseif ($type -eq "Int32" -or $type -eq "Decimal") {
+                $txJSON = $txJSON.Replace('"_LEDGERINDEX_"', "`"ledger_index`": $LedgerIndex,")
+            } else {
+                Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+                $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+            }
+        } else {
+            Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -Yellow
+            $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
+        }
+    }
+}
 #endregion
 
 #region Ledger Functions
