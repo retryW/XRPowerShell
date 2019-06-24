@@ -911,6 +911,10 @@ Function Get-Ledger {
         [Parameter(Mandatory=$false)]
         [switch]$Expand,
         [Parameter(Mandatory=$false)]
+        [switch]$Binary,
+        [Parameter(Mandatory=$false)]
+        [switch]$Queue,
+        [Parameter(Mandatory=$false)]
         [switch]$OwnerFunds
     )
     $txJSON =
@@ -922,6 +926,8 @@ Function Get-Ledger {
     "accounts": "_ACCOUNTS_",
     "transactions": "_TRANSACTIONS_",
     "expand": "_EXPAND_",
+    "binary": "_BINARY_",
+    "queue": "_QUEUE_",
     "owner_funds": "_OWNERFUNDS_"
 }'
     if ($Hash) {
@@ -962,31 +968,36 @@ Function Get-Ledger {
             $txJSON = $txJSON.Replace('    "ledger_index": "_LEDGERINDEX_",', "")
         }
     }
-
     if ($Full) {
         $txJSON = $txJSON.Replace('"_FULL_"', "true")
     } else {
         $txJSON = $txJSON.Replace('"_FULL_"', "false")
     }
-
     if ($Accounts) {
         $txJSON = $txJSON.Replace('"_ACCOUNTS_"', "true")
     } else {
         $txJSON = $txJSON.Replace('"_ACCOUNTS_"', "false")
     }
-
     if ($Transactions) {
         $txJSON = $txJSON.Replace('"_TRANSACTIONS_"', "true")
     } else {
         $txJSON = $txJSON.Replace('"_TRANSACTIONS_"', "false")
     }
-
     if ($Expand) {
         $txJSON = $txJSON.Replace('"_EXPAND_"', "true")
     } else {
         $txJSON = $txJSON.Replace('"_EXPAND_"', "false")
     }
-
+    if ($Binary) {
+        $txJSON = $txJSON.Replace("_BINARY_", "true")
+    } else {
+        $txJSON = $txJSON.Replace("_BINARY_", "false")
+    }
+    if ($Queue) {
+        $txJSON = $txJSON.Replace("_QUEUE_", "true")
+    } else {
+        $txJSON = $txJSON.Replace("_QUEUE_", "false")
+    }
     if ($OwnerFunds) {
         $txJSON = $txJSON.Replace('"_OWNERFUNDS_"', "true")
     } else {
