@@ -87,6 +87,17 @@ Function Get-ServerState {
     Send-Message (Format-txJSON $txJSON)
     Receive-Message
 }
+#endregion
+
+#region Utility Functions
+Function Get-Fee {
+        $txJSON =
+'{
+    "command": "fee"
+}'
+    Send-Message (Format-txJSON $txJSON)
+    Receive-Message
+}
 
 Function Ping-Server {
     $txJSON =
