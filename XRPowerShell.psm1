@@ -2,7 +2,7 @@
     XRPowerShell.ps1
     ----------------
 
-    Version: 0.1.7
+    Version: 0.3.0
 #>
 enum AccountObjectTypes {
     Check
