@@ -1026,8 +1026,109 @@ Function Get-LedgerCurrent {
     Receive-Message
 }
 
+Function Get-LedgerData {
+        [CmdletBinding()]
+    param (
+        # I hate variables starting with uppercase. But being a -Switch, looks stupid lowercase.
+        [Parameter(Mandatory=$false)]
+        [string]$Hash,
+        [Parameter(Mandatory=$false)]
+        $LedgerIndex,
+        [Parameter(Mandatory=$false)]
+        [switch]$Binary,
+        [Parameter(Mandatory=$false)]
+        [Int32]$Limit,
+        [Parameter(Mandatory=$false)]
+        [string]$Marker
+    )
+    $txJSON =
+'{
+    "command": "ledger_data",
+    "ledger_hash": "_LEDGERHASH_",
+    "ledger_index": "_LEDGERINDEX_",
+    _LIMIT_
+    _MARKER_
+    "binary": "_BINARY_"
+}'
+    if ($Hash) {
+        $txJSON = $txJSON.Replace('_LEDGERHASH_', $Hash)
+        # If -Hash is used, we don't want to also specify a ledger_index.
+        $txJSON = $txJSON.Replace('    "ledger_index": "_LEDGERINDEX_",', "")
+    } else {
+        $txJSON = $txJSON.Replace('    "ledger_hash": "_LEDGERHASH_",', "")
+        
+        # If -Hash is not used, check for ledger_index.
+        if ($LedgerIndex) {
+            $type = $LedgerIndex.GetType().Name
+            if ($type -eq "String") {
+                switch($LedgerIndex) {
+                    "validated" {
+                        $txJSON = $txJSON.Replace('_LEDGERINDEX_', "validated")
+                        break;
+                    }
+                    "closed" {
+                        $txJSON = $txJSON.Replace('_LEDGERINDEX_', "closed")
+                        break;
+                    }
+                    "current" {
+                        $txJSON = $txJSON.Replace('_LEDGERINDEX_', "current")
+                        break;
+                    }
+                    default {
+                        $txJSON = $txJSON.Replace('    "ledger_index": "_LEDGERINDEX_",', "")
+                        break;
+                    }
+                }
+            } elseif ($type -eq "Int32" -or $type -eq "Decimal") {
+                $txJSON = $txJSON.Replace('"_LEDGERINDEX_"', $LedgerIndex)
+            } else {
+                $txJSON = $txJSON.Replace('    "ledger_index": "_LEDGERINDEX_",', "")
+            }
+        } else {
+            $txJSON = $txJSON.Replace('    "ledger_index": "_LEDGERINDEX_",', "")
+        }
+    }
+    if ($Limit) {
+        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
+    } else {
+        $txJSON = $txJSON -replace "\s+_LIMIT_", "`r`n"
+    }
+    if ($Marker) {
+        $txJSON = $txJSON.Replace("_MARKER_", "`"marker`": `"$Marker`",")
+    } else {
+        $txJSON = $txJSON -replace "\s+_MARKER_", "`r`n"
+    }
+    if ($Binary) {
+        $txJSON = $txJSON.Replace("_BINARY_", "true")
+    } else {
+        $txJSON = $txJSON.Replace("_BINARY_", "false")
+    }
+
+    Send-Message (Format-txJSON $txJSON)
+    Receive-Message
+}
+
 Function Get-LedgerEntry {
  # TODO
+}
+#endregion
+
+#region Transaction Functions
+Function Submit-Transaction {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$Transaction
+    )
+    $txJSON =
+'{
+    "command": "submit",
+    "tx_blob": "_BLOB_"   
+}'
+    $txJSON = $txJSON.Replace("_BLOB", $Transaction)
+    
+    Send-Message (Format-txJSON $txJSON)
+    Receive-Message
 }
 #endregion
 
