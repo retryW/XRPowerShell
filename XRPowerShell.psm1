@@ -922,13 +922,13 @@ Function Get-Ledger {
     "command": "ledger",
     "ledger_hash": "_LEDGERHASH_",
     "ledger_index": "_LEDGERINDEX_",
-    "full": "_FULL_",
+    "full": _FULL_,
     "accounts": "_ACCOUNTS_",
-    "transactions": "_TRANSACTIONS_",
-    "expand": "_EXPAND_",
-    "binary": "_BINARY_",
-    "queue": "_QUEUE_",
-    "owner_funds": "_OWNERFUNDS_"
+    "transactions": _TRANSACTIONS_,
+    "expand": _EXPAND_,
+    "binary": _BINARY_,
+    "queue": _QUEUE_,
+    "owner_funds": _OWNERFUNDS_
 }'
     if ($Hash) {
         $txJSON = $txJSON.Replace('_LEDGERHASH_', $Hash)
@@ -1048,7 +1048,7 @@ Function Get-LedgerData {
     "ledger_index": "_LEDGERINDEX_",
     _LIMIT_
     _MARKER_
-    "binary": "_BINARY_"
+    "binary": _BINARY_
 }'
     if ($Hash) {
         $txJSON = $txJSON.Replace('_LEDGERHASH_', $Hash)
@@ -1125,7 +1125,43 @@ Function Submit-Transaction {
     "command": "submit",
     "tx_blob": "_BLOB_"   
 }'
-    $txJSON = $txJSON.Replace("_BLOB", $Transaction)
+    $txJSON = $txJSON.Replace("_BLOB_", $Transaction)
+    
+    Send-Message (Format-txJSON $txJSON)
+    Receive-Message
+}
+
+Function Submit-MultiSigned {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$txJSON
+    )
+    
+    Send-Message (Format-txJSON $txJSON)
+    Receive-Message
+}
+
+Function Get-Transaction {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$Transaction
+        [Parameter(Mandatory=$false)]
+        [switch]$Binary
+    )
+    $txJSON =
+'{
+    "command": "tx",
+    "transaction": "_TRANSACTION_",
+    "binary": _BINARY_
+}'
+    $txJSON = $txJSON.Replace("_TRANSACTION_", $Transaction)
+    if ($Binary) {
+        $txJSON = $txJSON.Replace("_BINARY_", "true")
+    } else {
+        $txJSON = $txJSON.Replace("_BINARY_", "false")
+    }
     
     Send-Message (Format-txJSON $txJSON)
     Receive-Message
