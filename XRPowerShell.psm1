@@ -524,6 +524,9 @@ Function Get-AccountObjects {
         # Remove comma (,) on last line causing JSON to become invalid (Only required if Marker isn't specified)
         $txJSON = $txJSON -replace ",\s+}", "`r`n}"
     }
+
+    Send-Message (Format-txJSON $txJSON)
+    Receive-Message
 }
 
 Function Get-AccountOffers {
@@ -801,6 +804,9 @@ Function Get-GatewayBalances {
     } else {
         $txJSON = $txJSON.Replace("_STRICT_", "false")
     }
+
+    Send-Message (Format-txJSON $txJSON)
+    Receive-Message
 }
 
 Get-NoRippleCheck {
@@ -830,6 +836,7 @@ Get-NoRippleCheck {
     "transactions": _TRANSACTIONS_
 }'
     $txJSON = $txJSON.replace("_ADDRESS_", $Address)
+    $txJSON = $txJSON.replace("_ROLE_", $Role)
     if ($Hash) {
         $txJSON = $txJSON.Replace("_HASH_", "`"ledger_hash`": `"$Hash`",")
         # If -Hash is used, we don't want to also specify a ledger_index.
@@ -837,8 +844,8 @@ Get-NoRippleCheck {
     } else {
         $txJSON = $txJSON -replace "\s+_HASH_", "`r`n"
         # If -Hash is not used, check for ledger_index.
-    if ($LedgerIndex) {
-        $type = $LedgerIndex.GetType().Name
+        if ($LedgerIndex) {
+            $type = $LedgerIndex.GetType().Name
             if ($type -eq "String") {
                 switch($LedgerIndex) {
                     "validated" {
@@ -870,6 +877,19 @@ Get-NoRippleCheck {
             $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
         }
     }
+    if ($Limit) {
+        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
+    } else {
+        $txJSON = $txJSON -replace "\s+_LIMIT_", "`r`n"
+    }
+    if ($Transactions) {
+        $txJSON = $txJSON.Replace("_TRANSACTIONS_", "true")
+    } else {
+        $txJSON = $txJSON.Replace("_TRANSACTIONS_", "false")
+    }
+
+    Send-Message (Format-txJSON $txJSON)
+    Receive-Message
 }
 #endregion
 
