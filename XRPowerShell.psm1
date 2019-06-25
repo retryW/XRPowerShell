@@ -33,6 +33,7 @@ Function Connect-XRPL {
     #>
     $Global:webSocket = New-Object System.Net.WebSockets.ClientWebSocket
     $Global:cancellationToken = New-Object System.Threading.CancellationToken
+    $Global:wsID = 1
 
     try {
         $command = $webSocket.ConnectAsync($wssUri, $cancellationToken)
@@ -73,18 +74,24 @@ Function Disconnect-XRPL {
 Function Get-ServerInfo {
     $txJSON = 
 '{
+    "id": _ID_,
     "command": "server_info"
 }'
+    $txJSON = $txJSON.replace("_ID_", $wsID)
     Send-Message (Format-txJSON $txJSON)
+    $wsID++
     Receive-Message
 }
 
 Function Get-ServerState {
     $txJSON =
 '{
+    "id": _ID_,
     "command": "server_state"
 }'
+    $txJSON = $txJSON.replace("_ID_", $wsID)
     Send-Message (Format-txJSON $txJSON)
+    $wsID++
     Receive-Message
 }
 #endregion
@@ -93,18 +100,24 @@ Function Get-ServerState {
 Function Get-Fee {
         $txJSON =
 '{
+    "id": _ID_,
     "command": "fee"
 }'
+    $txJSON = $txJSON.replace("_ID_", $wsID)
     Send-Message (Format-txJSON $txJSON)
+    $wsID++
     Receive-Message
 }
 
 Function Ping-Server {
     $txJSON =
 '{
+    "id": _ID_,
     "command": "ping"
 }'
+    $txJSON = $txJSON.replace("_ID_", $wsID)
     Send-Message (Format-txJSON $txJSON)
+    $wsID++
     Receive-Message
 }
 #endregion
@@ -129,6 +142,7 @@ Function Get-AccountChannels {
     
     $tsJSON =
 '{
+    "id": _ID_,
     "command": "account_channels",
     "account": "_ADDRESS_",
     _DESTINATION_
@@ -137,6 +151,7 @@ Function Get-AccountChannels {
     _LIMIT_
     _MARKER_
 }'
+    $txJSON = $txJSON.replace("_ID_", $wsID)
     $txJSON = $txJSON.replace("_ADDRESS_",$Address)
     if ($Destination) {
         $txJSON = $txJSON.Replace("_DESTINATION_", "`"destination_account`": $Destination,")
@@ -196,6 +211,7 @@ Function Get-AccountChannels {
         $txJSON = $txJSON -replace ",\s+}", "`r`n}"
     }
     Send-Message (Format-txJSON $txJSON)
+    $wsID++
     Receive-Message
 }
 
@@ -213,12 +229,14 @@ Function Get-AccountCurrencies {
     )
     $txJSON = 
 '{
+    "id": _ID_,
     "command": "account_info",
     "account": "_ADDRESS_",
     _HASH_
     _LEDGERINDEX_
     "strict": _STRICT_
 }'
+    $txJSON = $txJSON.replace("_ID_", $wsID)
     $txJSON = $txJSON.replace("_ADDRESS_",$Address)
     if ($Hash) {
         $txJSON = $txJSON.Replace("_HASH_", "`"ledger_hash`": `"$Hash`",")
@@ -267,6 +285,7 @@ Function Get-AccountCurrencies {
     }
 
     Send-Message (Format-txJSON $txJSON)
+    $wsID++
     Receive-Message
 }
 
@@ -289,6 +308,7 @@ Function Get-AccountInfo {
 
     $txJSON = 
 '{
+    "id": _ID_,
     "command": "account_info",
     "account": "_ADDRESS_",
     _HASH_
@@ -297,6 +317,7 @@ Function Get-AccountInfo {
     "signer_lists": _SIGNLISTS_,
     "strict": _STRICT_
 }'
+    $txJSON = $txJSON.replace("_ID_", $wsID)
     $txJSON = $txJSON.replace("_ADDRESS_",$Address)
     if ($Hash) {
         $txJSON = $txJSON.Replace("_HASH_", "`"ledger_hash`": $Hash,")
@@ -355,6 +376,7 @@ Function Get-AccountInfo {
     }
 
     Send-Message (Format-txJSON $txJSON)
+    $wsID++
     Receive-Message
 }
 
@@ -377,6 +399,7 @@ Function Get-AccountLines {
 
     $txJSON =
 '{
+    "id": _ID_,
     "command": "account_lines",
     "account": "_ADDRESS_",
     _HASH_
@@ -385,6 +408,7 @@ Function Get-AccountLines {
     _LIMIT_
     _MARKER_
 }'
+    $txJSON = $txJSON.replace("_ID_", $wsID)
     $txJSON = $txJSON.Replace("_ADDRESS_", $Address)
     if ($Hash) {
         $txJSON = $txJSON.Replace("_HASH_", "`"ledger_hash`": `"$Hash`",")
@@ -445,6 +469,7 @@ Function Get-AccountLines {
     }
 
     Send-Message (Format-txJSON $txJSON)
+    $wsID++
     Receive-Message
 }
 
@@ -469,6 +494,7 @@ Function Get-AccountObjects {
 
     $txJSON =
 '{
+    "id": _ID_,
     "command": "account_objects",
     "account": "_ADDRESS_",
     _TYPE_
@@ -477,6 +503,7 @@ Function Get-AccountObjects {
     _LIMIT_
     _MARKER_
 }'
+    $txJSON = $txJSON.replace("_ID_", $wsID)
     $txJSON = $txJSON.Replace("_ADDRESS_", $Address)
     if ($Type) {
         $txJSON = $txJSON.Replace("_TYPE_", "`"type`": `"$Type`",")
@@ -537,6 +564,7 @@ Function Get-AccountObjects {
     }
 
     Send-Message (Format-txJSON $txJSON)
+    $wsID++
     Receive-Message
 }
 
@@ -550,6 +578,7 @@ Function Get-AccountOffers {
     )
     $txJSON =
 '{
+    "id": _ID_,
     "command": "account_offers",
     "account": "_ADDRESS_",
     _HASH_
@@ -557,6 +586,7 @@ Function Get-AccountOffers {
     _LIMIT_
     _MARKER_
 }'
+    $txJSON = $txJSON.replace("_ID_", $wsID)
     $txJSON = $txJSON.replace("_ADDRESS_", $Address)
     if ($Hash) {
         $txJSON = $txJSON.Replace("_HASH_", "`"ledger_hash`": `"$Hash`",")
@@ -612,6 +642,7 @@ Function Get-AccountOffers {
     }
 
     Send-Message (Format-txJSON $txJSON)
+    $wsID++
     Receive-Message
 }
 
@@ -639,6 +670,7 @@ Function Get-AccountTx {
     )
     $txJSON =
 '{
+    "id": _ID_,
     "command": "account_tx",
     "account": "_ADDRESS_",
     _HASH_
@@ -650,6 +682,7 @@ Function Get-AccountTx {
     "binary": _BINARY_,
     "forward": _FORWARD_
 }'
+    $txJSON = $txJSON.replace("_ID_", $wsID)
     $txJSON = $txJSON.replace("_ADDRESS_", $Address)
     if ($Hash) {
         $txJSON = $txJSON.Replace("_HASH_", "`"ledger_hash`": `"$Hash`",")
@@ -723,6 +756,7 @@ Function Get-AccountTx {
     }
     
     Send-Message (Format-txJSON $txJSON)
+    $wsID++
     Receive-Message
 }
 
@@ -742,6 +776,7 @@ Function Get-GatewayBalances {
     )
     $txJSON =
 '{
+    "id": _ID_,
     "command": "account_tx",
     "account": "_ADDRESS_",
     _HASH_
@@ -749,6 +784,7 @@ Function Get-GatewayBalances {
     _HOTWALLET_
     "strict": _STRICT_
 }'
+    $txJSON = $txJSON.replace("_ID_", $wsID)
     $txJSON = $txJSON.replace("_ADDRESS_", $Address)
     if ($Hash) {
         $txJSON = $txJSON.Replace("_HASH_", "`"ledger_hash`": `"$Hash`",")
@@ -817,6 +853,7 @@ Function Get-GatewayBalances {
     }
 
     Send-Message (Format-txJSON $txJSON)
+    $wsID++
     Receive-Message
 }
 
@@ -838,6 +875,7 @@ Get-NoRippleCheck {
     )
     $txJSON =
 '{
+    "id": _ID_,
     "command": "noripple_check",
     "account": "_ADDRESS_",
     "role": "_ROLE_",
@@ -846,6 +884,7 @@ Get-NoRippleCheck {
     _LEDGERINDEX_
     "transactions": _TRANSACTIONS_
 }'
+    $txJSON = $txJSON.replace("_ID_", $wsID)
     $txJSON = $txJSON.replace("_ADDRESS_", $Address)
     $txJSON = $txJSON.replace("_ROLE_", $Role)
     if ($Hash) {
@@ -900,6 +939,7 @@ Get-NoRippleCheck {
     }
 
     Send-Message (Format-txJSON $txJSON)
+    $wsID++
     Receive-Message
 }
 #endregion
@@ -930,6 +970,7 @@ Function Get-Ledger {
     )
     $txJSON =
 '{
+    "id": _ID_,
     "command": "ledger",
     "ledger_hash": "_LEDGERHASH_",
     "ledger_index": "_LEDGERINDEX_",
@@ -941,6 +982,7 @@ Function Get-Ledger {
     "queue": _QUEUE_,
     "owner_funds": _OWNERFUNDS_
 }'
+    $txJSON = $txJSON.replace("_ID_", $wsID)
     if ($Hash) {
         $txJSON = $txJSON.Replace('_LEDGERHASH_', $Hash)
         # If -Hash is used, we don't want to also specify a ledger_index.
@@ -1016,24 +1058,31 @@ Function Get-Ledger {
     }
 
     Send-Message (Format-txJSON $txJSON)
+    $wsID++
     Receive-Message
 }
 
 Function Get-LedgerClosed {
     $txJSON =
 '{
+    "id": _ID_,
     "command": "ledger_closed"    
 }'
+    $txJSON = $txJSON.replace("_ID_", $wsID)
     Send-Message (Format-txJSON $txJSON)
+    $wsID++
     Receive-Message
 }
 
 Function Get-LedgerCurrent {
     $txJSON =
 '{
+    "id": _ID_,
     "command": "ledger_current"    
 }'
+    $txJSON = $txJSON.replace("_ID_", $wsID)
     Send-Message (Format-txJSON $txJSON)
+    $wsID++
     Receive-Message
 }
 
@@ -1054,6 +1103,7 @@ Function Get-LedgerData {
     )
     $txJSON =
 '{
+    "id": _ID_,
     "command": "ledger_data",
     "ledger_hash": "_LEDGERHASH_",
     "ledger_index": "_LEDGERINDEX_",
@@ -1061,6 +1111,7 @@ Function Get-LedgerData {
     _MARKER_
     "binary": _BINARY_
 }'
+    $txJSON = $txJSON.replace("_ID_", $wsID)
     if ($Hash) {
         $txJSON = $txJSON.Replace('_LEDGERHASH_', $Hash)
         # If -Hash is used, we don't want to also specify a ledger_index.
@@ -1116,6 +1167,7 @@ Function Get-LedgerData {
     }
 
     Send-Message (Format-txJSON $txJSON)
+    $wsID++
     Receive-Message
 }
 
@@ -1133,12 +1185,15 @@ Function Submit-Transaction {
     )
     $txJSON =
 '{
+    "id": _ID_,
     "command": "submit",
     "tx_blob": "_BLOB_"   
 }'
+    $txJSON = $txJSON.replace("_ID_", $wsID)
     $txJSON = $txJSON.Replace("_BLOB_", $Transaction)
     
     Send-Message (Format-txJSON $txJSON)
+    $wsID++
     Receive-Message
 }
 
@@ -1148,7 +1203,7 @@ Function Submit-MultiSigned {
         [Parameter(Mandatory=$true)]
         [string]$txJSON
     )
-    
+
     Send-Message (Format-txJSON $txJSON)
     Receive-Message
 }
@@ -1163,10 +1218,12 @@ Function Get-Transaction {
     )
     $txJSON =
 '{
+    "id": _ID_,
     "command": "tx",
     "transaction": "_TRANSACTION_",
     "binary": _BINARY_
 }'
+    $txJSON = $txJSON.replace("_ID_", $wsID)
     $txJSON = $txJSON.Replace("_TRANSACTION_", $Transaction)
     if ($Binary) {
         $txJSON = $txJSON.Replace("_BINARY_", "true")
@@ -1175,6 +1232,7 @@ Function Get-Transaction {
     }
     
     Send-Message (Format-txJSON $txJSON)
+    $wsID++
     Receive-Message
 }
 #endregion
