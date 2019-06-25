@@ -61,7 +61,7 @@ Function Disconnect-XRPL {
             Write-Host "Disconnected!" -ForegroundColor Yellow
             $webSocket.dispose()
         } else {
-            Write-Host "Error! Failed to disconnect websocket." -ForegroundColor Red
+            Write-Host "Error! Websocket already disconnected" -ForegroundColor Red
         }        
     } catch {
         Write-Host "Error!" -ForegroundColor Red
