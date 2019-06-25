@@ -79,7 +79,7 @@ Function Get-ServerInfo {
 }'
     $txJSON = $txJSON.replace("_ID_", $wsID)
     Send-Message (Format-txJSON $txJSON)
-    $wsID++
+    $Global:wsID++
     Receive-Message
 }
 
@@ -91,7 +91,7 @@ Function Get-ServerState {
 }'
     $txJSON = $txJSON.replace("_ID_", $wsID)
     Send-Message (Format-txJSON $txJSON)
-    $wsID++
+    $Global:wsID++
     Receive-Message
 }
 #endregion
@@ -105,7 +105,7 @@ Function Get-Fee {
 }'
     $txJSON = $txJSON.replace("_ID_", $wsID)
     Send-Message (Format-txJSON $txJSON)
-    $wsID++
+    $Global:wsID++
     Receive-Message
 }
 
@@ -117,7 +117,7 @@ Function Ping-Server {
 }'
     $txJSON = $txJSON.replace("_ID_", $wsID)
     Send-Message (Format-txJSON $txJSON)
-    $wsID++
+    $Global:wsID++
     Receive-Message
 }
 #endregion
@@ -211,7 +211,7 @@ Function Get-AccountChannels {
         $txJSON = $txJSON -replace ",\s+}", "`r`n}"
     }
     Send-Message (Format-txJSON $txJSON)
-    $wsID++
+    $Global:wsID++
     Receive-Message
 }
 
@@ -285,7 +285,7 @@ Function Get-AccountCurrencies {
     }
 
     Send-Message (Format-txJSON $txJSON)
-    $wsID++
+    $Global:wsID++
     Receive-Message
 }
 
@@ -376,7 +376,7 @@ Function Get-AccountInfo {
     }
 
     Send-Message (Format-txJSON $txJSON)
-    $wsID++
+    $Global:wsID++
     Receive-Message
 }
 
@@ -469,7 +469,7 @@ Function Get-AccountLines {
     }
 
     Send-Message (Format-txJSON $txJSON)
-    $wsID++
+    $Global:wsID++
     Receive-Message
 }
 
@@ -479,7 +479,7 @@ Function Get-AccountObjects {
         [Parameter(Mandatory=$true)]
         [string]$Address,
         [Parameter(Mandatory=$false)]
-        [AccountObjectTypes]$Type
+        [AccountObjectTypes]$Type,
         [Parameter(Mandatory=$false)]
         [string]$Hash,
         [Parameter(Mandatory=$false)]
@@ -564,7 +564,7 @@ Function Get-AccountObjects {
     }
 
     Send-Message (Format-txJSON $txJSON)
-    $wsID++
+    $Global:wsID++
     Receive-Message
 }
 
@@ -642,7 +642,7 @@ Function Get-AccountOffers {
     }
 
     Send-Message (Format-txJSON $txJSON)
-    $wsID++
+    $Global:wsID++
     Receive-Message
 }
 
@@ -756,7 +756,7 @@ Function Get-AccountTx {
     }
     
     Send-Message (Format-txJSON $txJSON)
-    $wsID++
+    $Global:wsID++
     Receive-Message
 }
 
@@ -853,11 +853,11 @@ Function Get-GatewayBalances {
     }
 
     Send-Message (Format-txJSON $txJSON)
-    $wsID++
+    $Global:wsID++
     Receive-Message
 }
 
-Get-NoRippleCheck {
+Function Get-NoRippleCheck {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory=$true)]
@@ -939,7 +939,7 @@ Get-NoRippleCheck {
     }
 
     Send-Message (Format-txJSON $txJSON)
-    $wsID++
+    $Global:wsID++
     Receive-Message
 }
 #endregion
@@ -1058,7 +1058,7 @@ Function Get-Ledger {
     }
 
     Send-Message (Format-txJSON $txJSON)
-    $wsID++
+    $Global:wsID++
     Receive-Message
 }
 
@@ -1070,7 +1070,7 @@ Function Get-LedgerClosed {
 }'
     $txJSON = $txJSON.replace("_ID_", $wsID)
     Send-Message (Format-txJSON $txJSON)
-    $wsID++
+    $Global:wsID++
     Receive-Message
 }
 
@@ -1082,7 +1082,7 @@ Function Get-LedgerCurrent {
 }'
     $txJSON = $txJSON.replace("_ID_", $wsID)
     Send-Message (Format-txJSON $txJSON)
-    $wsID++
+    $Global:wsID++
     Receive-Message
 }
 
@@ -1167,7 +1167,7 @@ Function Get-LedgerData {
     }
 
     Send-Message (Format-txJSON $txJSON)
-    $wsID++
+    $Global:wsID++
     Receive-Message
 }
 
@@ -1193,7 +1193,7 @@ Function Submit-Transaction {
     $txJSON = $txJSON.Replace("_BLOB_", $Transaction)
     
     Send-Message (Format-txJSON $txJSON)
-    $wsID++
+    $Global:wsID++
     Receive-Message
 }
 
@@ -1212,7 +1212,7 @@ Function Get-Transaction {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory=$true)]
-        [string]$Transaction
+        [string]$Transaction,
         [Parameter(Mandatory=$false)]
         [switch]$Binary
     )
@@ -1232,7 +1232,7 @@ Function Get-Transaction {
     }
     
     Send-Message (Format-txJSON $txJSON)
-    $wsID++
+    $Global:wsID++
     Receive-Message
 }
 #endregion
