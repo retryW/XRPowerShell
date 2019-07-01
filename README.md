@@ -20,7 +20,7 @@ Get-AccountInfo "rpbvDUFjb1RZYfMGoy8ki8itHNEXaeCALE"
 
 5. Make any response readable from console (but no longer a PowerShell object)
 
-Add `-ToString` to any function. Eg:
+    Add `-ToString` to any function. Eg:
 ```powershell
 Get-AccountInfo "rpbvDUFjb1RZYfMGoy8ki8itHNEXaeCALE" -ToString
 ```
