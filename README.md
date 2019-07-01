@@ -4,6 +4,7 @@ A PowerShell Module / API to connect to the XRP Ledger via Websockets
 **Usage**
 
 1. Clone this repository or save the contents into a .psm1 file
+
 2. Import the Module
 ```powershell
 Import-Module 
@@ -16,26 +17,24 @@ Connect-XRPL "wss://s1.ripple.com:443"
 ```powershell
 Get-AccountInfo "rpbvDUFjb1RZYfMGoy8ki8itHNEXaeCALE"
 ```
-5. Make any response more readable (but no longer an object)
+
+5. Make any response readable from console (but no longer a PowerShell object)
+
+Add `-ToString` to any function. Eg:
 ```powershell
-ConvertTo-ReadableJSON $input
-```
-OR pipe it
-```powershell
-Get-AccountInfo "rpbvDUFjb1RZYfMGoy8ki8itHNEXaeCALE" | ConvertTo-ReadableJSON
+Get-AccountInfo "rpbvDUFjb1RZYfMGoy8ki8itHNEXaeCALE" -ToString
 ```
 
-6. Query the XRP Ledger with any valid command (yet to be implemented)
+6. Query the XRP Ledger with any valid command JSON
 ```powershell
 $txJSON =
 '{
-    "id": 1,
+    "id": 1337,
     "command": "account_lines",
     "account": "rpbvDUFjb1RZYfMGoy8ki8itHNEXaeCALE",
     "ledger": "current"
 }'
-$tx = Format-TxJSON $txJSON
-Send-Transaction $tx
+Send-CustomTx $txJSON
 ```
 
 7. Disconnect from the XRPL
