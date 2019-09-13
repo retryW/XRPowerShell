@@ -3,11 +3,14 @@ A PowerShell Module / API to connect to the XRP Ledger via Websockets
 
 **Usage**
 
-1. Clone this repository or save the contents into a .psm1 file
+1. Clone this repository
+
+2. Extract it to the PowerShell Modules directory (below is the default):
+`C:\Windows\System32\WindowsPowerShell\v1.0\Modules\`
 
 2. Import the Module
 ```powershell
-Import-Module 
+Import-Module XRPowershell
 ```
 3. Connect to a XRPL websocket
 ```powershell
