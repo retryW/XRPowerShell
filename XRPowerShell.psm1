@@ -2,7 +2,7 @@
     XRPowerShell.ps1
     ----------------
 
-    Version: 0.5.0
+    Version: 0.5.1
 #>
 enum AccountObjectTypes {
     Check
@@ -242,7 +242,8 @@ Function Get-AccountChannels {
     if ($Limit) {
         $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
     } else {
-        $txJSON = $txJSON -replace "\s+_LIMIT_", "`r`n"
+        # Default to 5 if none specified.
+        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": 5,")
     }
     if ($MARKER) {
         $txJSON = $txJSON.Replace("_MARKER_", "`"marker`": $Marker")
@@ -514,7 +515,8 @@ Function Get-AccountLines {
     if ($Limit) {
         $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
     } else {
-        $txJSON = $txJSON -replace "\s+_LIMIT_", "`r`n"
+        # Default to 5 if none specified.
+        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": 5,")
     }
     if ($Marker) {
         $txJSON = $txJSON.Replace("_MARKER_", "`"marker`": $Marker")
@@ -614,7 +616,8 @@ Function Get-AccountObjects {
     if ($Limit) {
         $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
     } else {
-        $txJSON = $txJSON -replace "\s+_LIMIT_", "`r`n"
+        # Default to 5 if none specified.
+        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": 5,")
     }
     if ($Marker) {
         $txJSON = $txJSON.Replace("_MARKER_", "`"marker`": $Marker")
@@ -697,7 +700,8 @@ Function Get-AccountOffers {
     if ($Limit) {
         $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
     } else {
-        $txJSON = $txJSON -replace "\s+_LIMIT_", "`r`n"
+        # Default to 5 if none specified.
+        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": 5,")
     }
     if ($Marker) {
         $txJSON = $txJSON.Replace("_MARKER_", "`"marker`": $Marker")
@@ -1015,7 +1019,8 @@ Function Get-NoRippleCheck {
     if ($Limit) {
         $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
     } else {
-        $txJSON = $txJSON -replace "\s+_LIMIT_", "`r`n"
+        # Default to 5 if none specified.
+        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": 5,")
     }
     if ($Transactions) {
         $txJSON = $txJSON.Replace("_TRANSACTIONS_", "true")
@@ -1269,7 +1274,8 @@ Function Get-LedgerData {
     if ($Limit) {
         $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
     } else {
-        $txJSON = $txJSON -replace "\s+_LIMIT_", "`r`n"
+        # Default to 5 if none specified.
+        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": 5,")
     }
     if ($Marker) {
         $txJSON = $txJSON.Replace("_MARKER_", "`"marker`": `"$Marker`",")
