@@ -277,7 +277,7 @@ Function Get-AccountCurrencies {
     $txJSON = 
 '{
     "id": _ID_,
-    "command": "account_info",
+    "command": "account_currencies",
     "account": "_ADDRESS_",
     _HASH_
     _LEDGERINDEX_
@@ -798,7 +798,8 @@ Function Get-AccountTx {
     if ($Limit) {
         $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
     } else {
-        $txJSON = $txJSON -replace "\s+_LIMIT_", "`r`n"
+        # Default to 5 if none specified.
+        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": 5,")
     }
     if ($Marker) {
         $txJSON = $txJSON.Replace("_MARKER_", "`"marker`": `"$Marker`",")
