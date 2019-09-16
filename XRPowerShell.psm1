@@ -855,7 +855,7 @@ Function Get-GatewayBalances {
     $txJSON =
 '{
     "id": _ID_,
-    "command": "account_tx",
+    "command": "gateway_balances",
     "account": "_ADDRESS_",
     _HASH_
     _LEDGERINDEX_
@@ -1063,10 +1063,10 @@ Function Get-Ledger {
 '{
     "id": _ID_,
     "command": "ledger",
-    "ledger_hash": "_LEDGERHASH_",
-    "ledger_index": "_LEDGERINDEX_",
+    _HASH_
+    _LEDGERINDEX_
     "full": _FULL_,
-    "accounts": "_ACCOUNTS_",
+    "accounts": _ACCOUNTS_,
     "transactions": _TRANSACTIONS_,
     "expand": _EXPAND_,
     "binary": _BINARY_,
@@ -1075,41 +1075,42 @@ Function Get-Ledger {
 }'
     $txJSON = $txJSON.replace("_ID_", $wsID)
     if ($Hash) {
-        $txJSON = $txJSON.Replace('_LEDGERHASH_', $Hash)
+        $txJSON = $txJSON.Replace("_HASH_", "`"ledger_hash`": `"$Hash`",")
         # If -Hash is used, we don't want to also specify a ledger_index.
-        $txJSON = $txJSON.Replace('    "ledger_index": "_LEDGERINDEX_",', "")
+        $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
     } else {
-        $txJSON = $txJSON.Replace('    "ledger_hash": "_LEDGERHASH_",', "")
-        
+        $txJSON = $txJSON -replace "\s+_HASH_", "`r`n"
         # If -Hash is not used, check for ledger_index.
         if ($LedgerIndex) {
             $type = $LedgerIndex.GetType().Name
             if ($type -eq "String") {
                 switch($LedgerIndex) {
                     "validated" {
-                        $txJSON = $txJSON.Replace('_LEDGERINDEX_', "validated")
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"validated`",")
                         break;
                     }
                     "closed" {
-                        $txJSON = $txJSON.Replace('_LEDGERINDEX_', "closed")
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"closed`",")
                         break;
                     }
                     "current" {
-                        $txJSON = $txJSON.Replace('_LEDGERINDEX_', "current")
+                        $txJSON = $txJSON.Replace("_LEDGERINDEX_", "`"ledger_index`": `"current`",")
                         break;
                     }
                     default {
-                        $txJSON = $txJSON.Replace('    "ledger_index": "_LEDGERINDEX_",', "")
+                        Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -ForegroundColor Yellow
+                        $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
                         break;
                     }
                 }
             } elseif ($type -eq "Int32" -or $type -eq "Decimal") {
-                $txJSON = $txJSON.Replace('"_LEDGERINDEX_"', $LedgerIndex)
+                $txJSON = $txJSON.Replace('"_LEDGERINDEX_"', "`"ledger_index`": $LedgerIndex,")
             } else {
-                $txJSON = $txJSON.Replace('    "ledger_index": "_LEDGERINDEX_",', "")
+                Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -ForegroundColor Yellow
+                $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
             }
         } else {
-            $txJSON = $txJSON.Replace('    "ledger_index": "_LEDGERINDEX_",', "")
+            $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
         }
     }
     if ($Full) {
