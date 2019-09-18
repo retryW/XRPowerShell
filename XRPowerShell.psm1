@@ -243,7 +243,7 @@ Function Get-AccountChannels {
         $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
     } else {
         # Default to 5 if none specified.
-        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": 5,")
+        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": 10,")
     }
     if ($MARKER) {
         $txJSON = $txJSON.Replace("_MARKER_", "`"marker`": $Marker")
@@ -516,7 +516,7 @@ Function Get-AccountLines {
         $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
     } else {
         # Default to 5 if none specified.
-        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": 5,")
+        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": 10,")
     }
     if ($Marker) {
         $txJSON = $txJSON.Replace("_MARKER_", "`"marker`": $Marker")
@@ -617,7 +617,7 @@ Function Get-AccountObjects {
         $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
     } else {
         # Default to 5 if none specified.
-        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": 5,")
+        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": 10,")
     }
     if ($Marker) {
         $txJSON = $txJSON.Replace("_MARKER_", "`"marker`": $Marker")
@@ -701,7 +701,7 @@ Function Get-AccountOffers {
         $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
     } else {
         # Default to 5 if none specified.
-        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": 5,")
+        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": 10,")
     }
     if ($Marker) {
         $txJSON = $txJSON.Replace("_MARKER_", "`"marker`": $Marker")
@@ -803,7 +803,7 @@ Function Get-AccountTx {
         $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
     } else {
         # Default to 5 if none specified.
-        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": 5,")
+        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": 10,")
     }
     if ($Marker) {
         $txJSON = $txJSON.Replace("_MARKER_", "`"marker`": `"$Marker`",")
@@ -1020,7 +1020,7 @@ Function Get-NoRippleCheck {
         $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
     } else {
         # Default to 5 if none specified.
-        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": 5,")
+        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": 10,")
     }
     if ($Transactions) {
         $txJSON = $txJSON.Replace("_TRANSACTIONS_", "true")
@@ -1275,7 +1275,7 @@ Function Get-LedgerData {
         $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
     } else {
         # Default to 5 if none specified.
-        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": 5,")
+        $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": 10,")
     }
     if ($Marker) {
         $txJSON = $txJSON.Replace("_MARKER_", "`"marker`": `"$Marker`",")
@@ -1298,7 +1298,8 @@ Function Get-LedgerData {
 }
 
 Function Get-LedgerEntry {
- # TODO
+    # TODO
+    Write-Host "Not yet implemented" -ForegroundColor Yellow
 }
 #endregion
 
