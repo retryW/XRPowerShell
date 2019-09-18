@@ -18,7 +18,7 @@ Function Connect-XRPL {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)]
-        [String]$wssUri
+        [String]$SocketURL
     )
 
     # Don't let Connect-XRPL overwrite an existing connection.
@@ -36,7 +36,7 @@ Function Connect-XRPL {
     $Global:wsID = 1
 
     try {
-        $command = $webSocket.ConnectAsync($wssUri, $cancellationToken)
+        $command = $webSocket.ConnectAsync($SocketURL, $cancellationToken)
         while (!$command.IsCompleted) {
             Start-Sleep -Milliseconds 100
         }
@@ -641,6 +641,10 @@ Function Get-AccountOffers {
     param(
         [Parameter(Mandatory=$true)]
         [string]$Address,
+        [Parameter(Mandatory=$false)]
+        [string]$Hash,
+        [Parameter(Mandatory=$false)]
+        $LedgerIndex,
         [Parameter(Mandatory=$false)]
         [Int32]$Limit,
         [Parameter(Mandatory=$false)]
