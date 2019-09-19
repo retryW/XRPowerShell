@@ -1312,7 +1312,7 @@ Function Submit-Transaction {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory=$true)]
-        [string]$Transaction,
+        [string]$TxBlob,
         [Parameter(Mandatory=$false)]
         [switch]$ToString
     )
@@ -1323,7 +1323,7 @@ Function Submit-Transaction {
     "tx_blob": "_BLOB_"   
 }'
     $txJSON = $txJSON.replace("_ID_", $wsID)
-    $txJSON = $txJSON.Replace("_BLOB_", $Transaction)
+    $txJSON = $txJSON.Replace("_BLOB_", $TxBlob)
     
     Send-Message (Format-txJSON $txJSON)
     $Global:wsID++
