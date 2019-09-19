@@ -1052,10 +1052,6 @@ Function Get-Ledger {
         [Parameter(Mandatory=$false)]
         $LedgerIndex,
         [Parameter(Mandatory=$false)]
-        [switch]$Full,
-        [Parameter(Mandatory=$false)]
-        [switch]$Accounts,
-        [Parameter(Mandatory=$false)]
         [switch]$Transactions,
         [Parameter(Mandatory=$false)]
         [switch]$Expand,
@@ -1074,8 +1070,6 @@ Function Get-Ledger {
     "command": "ledger",
     _HASH_
     _LEDGERINDEX_
-    "full": _FULL_,
-    "accounts": _ACCOUNTS_,
     "transactions": _TRANSACTIONS_,
     "expand": _EXPAND_,
     "binary": _BINARY_,
@@ -1121,16 +1115,6 @@ Function Get-Ledger {
         } else {
             $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
         }
-    }
-    if ($Full) {
-        $txJSON = $txJSON.Replace("_FULL_", "true")
-    } else {
-        $txJSON = $txJSON.Replace("_FULL_", "false")
-    }
-    if ($Accounts) {
-        $txJSON = $txJSON.Replace("_ACCOUNTS_", "true")
-    } else {
-        $txJSON = $txJSON.Replace("_ACCOUNTS_", "false")
     }
     if ($Transactions) {
         $txJSON = $txJSON.Replace("_TRANSACTIONS_", "true")
