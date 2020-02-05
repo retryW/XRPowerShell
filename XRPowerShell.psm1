@@ -1,9 +1,16 @@
 <# 
-    XRPowerShell.ps1
-    ----------------
-
-    Version: 0.5.1
+XRPowerShell.psm1
+----------------
+.synopsis
+    - Access the XRPL via PowerShell
+.description
+    - Interacts with the XRP Ledger via websockets calls to ledger nodes.
+.notes
+    - Author: Cale Robertson (retryW)
+    - Email: retrw01@gmail.com
+    - Version: 0.7.1
 #>
+
 enum AccountObjectTypes {
     Check
     DepositPreauth
@@ -229,7 +236,7 @@ Function Get-AccountChannels {
                     }
                 }
             } elseif ($type -eq "Int32" -or $type -eq "Decimal") {
-                $txJSON = $txJSON.Replace('"_LEDGERINDEX_"', "`"ledger_index`": $LedgerIndex,")
+                $txJSON = $txJSON.Replace('_LEDGERINDEX_', "`"ledger_index`": $LedgerIndex,")
             } else {
                 Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -ForegroundColor Yellow
                 $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
@@ -316,7 +323,7 @@ Function Get-AccountCurrencies {
                     }
                 }
             } elseif ($type -eq "Int32" -or $type -eq "Decimal") {
-                $txJSON = $txJSON.Replace('"_LEDGERINDEX_"', "`"ledger_index`": $LedgerIndex,")
+                $txJSON = $txJSON.Replace('_LEDGERINDEX_', "`"ledger_index`": $LedgerIndex,")
             } else {
                 Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -ForegroundColor Yellow
                 $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
@@ -498,7 +505,7 @@ Function Get-AccountLines {
                     }
                 }
             } elseif ($type -eq "Int32" -or $type -eq "Decimal") {
-                $txJSON = $txJSON.Replace('"_LEDGERINDEX_"', "`"ledger_index`": $LedgerIndex,")
+                $txJSON = $txJSON.Replace('_LEDGERINDEX_', "`"ledger_index`": $LedgerIndex,")
             } else {
                 Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -ForegroundColor Yellow
                 $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
@@ -604,7 +611,7 @@ Function Get-AccountObjects {
                     }
                 }
             } elseif ($type -eq "Int32" -or $type -eq "Decimal") {
-                $txJSON = $txJSON.Replace('"_LEDGERINDEX_"', "`"ledger_index`": $LedgerIndex,")
+                $txJSON = $txJSON.Replace('_LEDGERINDEX_', "`"ledger_index`": $LedgerIndex,")
             } else {
                 Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -ForegroundColor Yellow
                 $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
@@ -692,7 +699,7 @@ Function Get-AccountOffers {
                     }
                 }
             } elseif ($type -eq "Int32" -or $type -eq "Decimal") {
-                $txJSON = $txJSON.Replace('"_LEDGERINDEX_"', "`"ledger_index`": $LedgerIndex,")
+                $txJSON = $txJSON.Replace('_LEDGERINDEX_', "`"ledger_index`": $LedgerIndex,")
             } else {
                 Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -ForegroundColor Yellow
                 $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
@@ -794,7 +801,7 @@ Function Get-AccountTx {
                     }
                 }
             } elseif ($type -eq "Int32" -or $type -eq "Decimal") {
-                $txJSON = $txJSON.Replace('"_LEDGERINDEX_"', "`"ledger_index`": $LedgerIndex,")
+                $txJSON = $txJSON.Replace('_LEDGERINDEX_', "`"ledger_index`": $LedgerIndex,")
             } else {
                 Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -ForegroundColor Yellow
                 $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
@@ -902,7 +909,7 @@ Function Get-GatewayBalances {
                     }
                 }
             } elseif ($type -eq "Int32" -or $type -eq "Decimal") {
-                $txJSON = $txJSON.Replace('"_LEDGERINDEX_"', "`"ledger_index`": $LedgerIndex,")
+                $txJSON = $txJSON.Replace('_LEDGERINDEX_', "`"ledger_index`": $LedgerIndex,")
             } else {
                 Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -ForegroundColor Yellow
                 $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
@@ -913,7 +920,7 @@ Function Get-GatewayBalances {
     }
     if ($HotWallet) {
         if ($HotWallet.GetType().Name -eq "String") {
-            $txJSON = $txJSON.Replace('"_HOTWALLET_"', "`"hotwallet`": `"$HotWallet`",")
+            $txJSON = $txJSON.Replace('_HOTWALLET_', "`"hotwallet`": `"$HotWallet`",")
         } elseif ($HotWallet.GetType().Name -eq "Object[]") {
             $walletStr = "["
             foreach ($wallet in $HotWallet) {
@@ -926,7 +933,7 @@ Function Get-GatewayBalances {
             }
             # Remove extra ',' from end of string
             $walletStr = $walletStr.Substring(0,$walletStr.Length-1) + "]"
-            $txJSON = $txJSON.Replace('"_HOTWALLET_"', "`"hotwallet`": $LedgerIndex,")
+            $txJSON = $txJSON.Replace('_HOTWALLET_', "`"hotwallet`": $LedgerIndex,")
         } else {
             $txJSON = $txJSON -replace "\s+_HOTWALLET_", "`r`n"
         }
@@ -967,6 +974,7 @@ Function Get-NoRippleCheck {
         [switch]$ToString
         
     )
+    # Parameter Role can be either 'gateway' or 'user'
     $txJSON =
 '{
     "id": _ID_,
@@ -1011,7 +1019,7 @@ Function Get-NoRippleCheck {
                     }
                 }
             } elseif ($type -eq "Int32" -or $type -eq "Decimal") {
-                $txJSON = $txJSON.Replace('"_LEDGERINDEX_"', "`"ledger_index`": $LedgerIndex,")
+                $txJSON = $txJSON.Replace('_LEDGERINDEX_', "`"ledger_index`": $LedgerIndex,")
             } else {
                 Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -ForegroundColor Yellow
                 $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
@@ -1107,7 +1115,7 @@ Function Get-Ledger {
                     }
                 }
             } elseif ($type -eq "Int32" -or $type -eq "Decimal") {
-                $txJSON = $txJSON.Replace('"_LEDGERINDEX_"', "`"ledger_index`": $LedgerIndex,")
+                $txJSON = $txJSON.Replace('_LEDGERINDEX_', "`"ledger_index`": $LedgerIndex,")
             } else {
                 Write-Host "Invalid input. Tx sent but ledger_index has been omitted" -ForegroundColor Yellow
                 $txJSON = $txJSON -replace "\s+_LEDGERINDEX_", "`r`n"
@@ -1251,7 +1259,7 @@ Function Get-LedgerData {
                     }
                 }
             } elseif ($type -eq "Int32" -or $type -eq "Decimal") {
-                $txJSON = $txJSON.Replace('"_LEDGERINDEX_"', $LedgerIndex)
+                $txJSON = $txJSON.Replace('_LEDGERINDEX_', $LedgerIndex)
             } else {
                 $txJSON = $txJSON.Replace('    "ledger_index": "_LEDGERINDEX_",', "")
             }
@@ -1262,7 +1270,7 @@ Function Get-LedgerData {
     if ($Limit) {
         $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": $Limit,")
     } else {
-        # Default to 5 if none specified.
+        # Default to 10 if none specified.
         $txJSON = $txJSON.Replace("_LIMIT_", "`"limit`": 10,")
     }
     if ($Marker) {
@@ -1369,7 +1377,7 @@ Function Get-Transaction {
     }
 }
 
-Function Send-CustomTx {
+Function Send-CustomRequest {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory=$true)]
@@ -1456,6 +1464,12 @@ Function Receive-Message {
     }
 }
 
+<#
+ConvertTo-ReadableJSON is a deprecated function as it's now part of Receive-Message
+
+For some reason when receiving the JSON response, it's formatting was completely wrong when displayed on screen. 
+Simply converting it to a PSObject, then back to JSON resolves this issue.
+#>
 Function ConvertTo-ReadableJSON {
     [CmdletBinding()]
     param(
